@@ -56,7 +56,7 @@ Go
 Create Table Courses
 (
 	CourseId int primary key,
-	UserId int not null Unique, -- this one enfore 1 to many relationship
+	UserId int not null, -- Correct this one by remove Unique because if we use unique it will understand as 1-to-1
 	CourseName nvarchar(255) not null,
 	D2LCourseID nvarchar(255) unique not null,
 	Semester nvarchar(255) not null,
@@ -82,9 +82,9 @@ Go
 Create Table Assignments
 (
 	AssignmentId int primary key,
-	-- enforce 1-to-many relationship
-	CourseId int not null unique,
-	UserId int not null unique,
+	-- Correc this by remove unique to actually be 1-to-many
+	CourseId int not null,
+	UserId int not null,
 	Title nvarchar(255) not null,
 	Description nvarchar(255),
 	DueDate datetime,
@@ -96,8 +96,10 @@ Create Table Assignments
 	CompletedDate datetime default Getdate(),
 	-- Ensure 1 to many relationship
 	Constraint FK_Assingments_User Foreign key(UserId) References Users(UserId) On Delete Cascade,
-	Constraint FK_Assignments_Courses Foreign key(CourseId) References Courses(CourseId) On Delete No Action -- when I set cascade, it report error so i set to no action
+	Constraint FK_Assignments_Courses Foreign key(CourseId) References Courses(CourseId) On Delete No Action, -- when I set cascade, it report error so i set to no action
+	Constraint UK_CourseId_Title Unique(CourseId,Title) -- prevent fro accidentially insert two assignments with same title
 )
+Go
 Create Nonclustered index IX_CourseID on dbo.Assignments(CourseId);
 Create Nonclustered index IX_UserId on dbo.Assignments(UserId);
 Create Nonclustered index IX_DueDate on dbo.Assignments(DueDate);
@@ -105,4 +107,51 @@ Create Nonclustered index IX_Status on dbo.Assignments(Status);
 -- composite index
 Create Nonclustered index IX_UserID_Status_DueDate on dbo.Assignments(UserId,Status,DueDate);
 Create Nonclustered index IX_Priority_DueDate on dbo.Assignments(Priority DESC,DueDate ASC);
+Go
+-- CourseWeeks Table
+if Exists(Select Name from sys.tables where Name = 'CourseWeeks')
+Begin
+ Drop Table CourseWeeks;
+End
 
+Go
+Create Table CourseWeeks
+(
+	WeekId int primary key,
+	CourseId int not null,
+	WeekTitle nvarchar(255),
+	WeekNumber int not null, 
+	Description nvarchar(255),
+	StartDate datetime,
+	EndDate datetime,
+	OrderIndex int,
+	IsPublished bit not null default 1,
+	Constraint FK_CourseId_CourseWeek_Table Foreign key(CourseId) References Courses(CourseId) on Delete cascade,
+	Constraint UniqueKey_CourseId_WeekNumber Unique(CourseId,WeekNumber),
+	Constraint CK_CourseWeeks_EndDate CHECK (EndDate >= StartDate)
+)
+GO
+if Exists(Select Name from sys.tables where Name = 'CourseMaterials')
+Begin
+ Drop Table CourseMaterials;
+End
+Go
+Create table CourseMaterials
+(
+	MaterialId int primary key,
+	WeekId int not null,
+	MaterialName nvarchar(255),
+	MaterialType nvarchar(255),
+	FileUrl nvarchar(255),
+	Description nvarchar(255),
+	FileSizeKb int,
+	UploadDate datetime,
+	LastAccessedDate datetime,
+	ViewCount int default 0,
+	IsDownloadable bit not null default 1,
+	constraint FK_WeekId_CourseMaterials_Table Foreign key(WeekId) References CourseWeeks(WeekId) On Delete Cascade
+)
+Go
+-- index
+Create Nonclustered index IX_WeekId_Get_All_Material_For_This_Week on dbo.CourseMaterials(WeekId);
+Create Nonclustered index IX_MaterialType on dbo.CourseMaterials(MaterialType);
