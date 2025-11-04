@@ -44,10 +44,31 @@ IF EXISTS(Select name from sys.indexes where name = N'IX_On_Email_For_Filtering_
 Begin
 	Drop Index IX_On_Email_For_Filtering_Active_User On dbo.Users;
 End
-
+Go
 Create Nonclustered index IX_On_Email_For_Filtering_Active_User On dbo.Users(IsActive);
-
 Go
-Alter Table Users Alter column Password nvarchar(256) not null;
+-- Course Table
+If Exists(Select Name From Sys.tables where Name = 'Courses')
+Begin
+	Drop Table Courses;
+End
 Go
-Alter Table Users Alter column Email nvarchar(255) not null;
+Create Table Courses
+(
+	CourseId int primary key,
+	UserId int not null Unique, -- this one enfore 1 to many relationship
+	CourseName nvarchar(255) not null,
+	D2LCourseID nvarchar(255) unique not null,
+	Semester nvarchar(255) not null,
+	Professor nvarchar(255) not null,
+	CourseCode nvarchar(255) not null,
+	CreateDate datetime default Getdate(),
+	IsArchived bit not null Default 0,
+	Constraint FK_UserID_Courses_Table Foreign key(UserId) References Users(UserId) On Delete Cascade -- this one enfore 1 to many relationship
+)
+Go
+-- Add Index
+Create Nonclustered Index IX_For_Filter_By_Term On dbo.Courses(Semester);
+-- Add Composite index to get active coursees for users
+Go
+Create Nonclustered Index IX_For_Get_Active_Course_For_User On dbo.Courses(UserId,IsArchived);
