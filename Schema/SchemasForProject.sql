@@ -72,3 +72,37 @@ Create Nonclustered Index IX_For_Filter_By_Term On dbo.Courses(Semester);
 -- Add Composite index to get active coursees for users
 Go
 Create Nonclustered Index IX_For_Get_Active_Course_For_User On dbo.Courses(UserId,IsArchived);
+Go
+-- Table Assingments
+If Exists(Select Name From Sys.tables where Name = 'Assignments')
+Begin
+	Drop Table Assignments;
+End
+Go
+Create Table Assignments
+(
+	AssignmentId int primary key,
+	-- enforce 1-to-many relationship
+	CourseId int not null unique,
+	UserId int not null unique,
+	Title nvarchar(255) not null,
+	Description nvarchar(255),
+	DueDate datetime,
+	Weight int check(Weight between 0 and 100),
+	Status nvarchar(255),
+	Grade decimal(4,2) check(Grade is null or Grade between 0 and 100),
+	Priority int,
+	CreateDate datetime default Getdate(),
+	CompletedDate datetime default Getdate(),
+	-- Ensure 1 to many relationship
+	Constraint FK_Assingments_User Foreign key(UserId) References Users(UserId) On Delete Cascade,
+	Constraint FK_Assignments_Courses Foreign key(CourseId) References Courses(CourseId) On Delete No Action -- when I set cascade, it report error so i set to no action
+)
+Create Nonclustered index IX_CourseID on dbo.Assignments(CourseId);
+Create Nonclustered index IX_UserId on dbo.Assignments(UserId);
+Create Nonclustered index IX_DueDate on dbo.Assignments(DueDate);
+Create Nonclustered index IX_Status on dbo.Assignments(Status);
+-- composite index
+Create Nonclustered index IX_UserID_Status_DueDate on dbo.Assignments(UserId,Status,DueDate);
+Create Nonclustered index IX_Priority_DueDate on dbo.Assignments(Priority DESC,DueDate ASC);
+
