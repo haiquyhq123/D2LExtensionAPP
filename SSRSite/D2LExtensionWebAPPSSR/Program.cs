@@ -8,12 +8,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-var app = builder.Build();
-
 //Set up the connection string
 builder.Services.AddDbContext<D2LDBContext>(opts => opts.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 // Set up the AddIdentity
 builder.Services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<D2LDBContext>();
+
+var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
