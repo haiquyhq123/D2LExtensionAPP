@@ -1,0 +1,27 @@
+﻿@model D2LExtensionWebAPPSSR.Models.UserRegistrationModel
+<h1>Register</h1>
+<form asp-action="Register">
+    <div asp-validation-summary="All">
+        <label asp-for="firstName">First Name:</label>
+        <input asp-for="firstName" />
+        <br/>
+        <label asp-for="lastName">Last name:</label>
+        <input asp-for="lastName" />
+        <br/>
+        <label asp-for="Email">Email:</label>
+        <input asp-for="Email" />
+        <span asp-validation-for="Email"></span>
+        <br/>
+        <label asp-for="Password">Password:</label>
+        <input asp-for="Password" />
+        <span asp-validation-for="Password"></span>
+        <br/>
+        <label asp-for="ConfirmPassword">Confirm Password:</label>
+        <input asp-for="ConfirmPassword" />
+        <span asp-validation-for="ConfirmPassword"></span>
+        <br/>
+        <input type="submit" value="Create" />
+    </div>
+</form>
+
+  

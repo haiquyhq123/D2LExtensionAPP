@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Register AutoMapper
+builder.Services.AddAutoMapper(typeof(Program));
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
