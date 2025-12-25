@@ -1,4 +1,25 @@
-﻿@{
-    ViewData["Title"] = "Index";
+﻿@using D2LExtensionWebAPPSSR.Models.PomodoroFeatures
+@model List<PomodoroTask> 
+@{
+    ViewData["Title"] = "Pomodoro Tasks";
 }
-<h2> Pomodoro session</h2>
+<h1>Details</h1>
+<hr />
+<div id="details">
+    @foreach(var item in Model)
+    {
+        <div class="items">
+            <p>@item.PromodoroTaskId.ToString() | @item.Title.ToString() | Expected: @item.ExpectedPomodoroSession.ToString() </p>
+            <form asp-action="UpdateTask" asp-controller="PomodoroSessions" method="get">
+                <input type="hidden" value="@item.PromodoroTaskId.ToString()" name="id" />
+                <button type="submit">Update</button>
+            </form>
+            <form asp-action="DeleteTask" asp-controller="PomodoroSessions" method="post">
+                <input type="hidden" value="@item.PromodoroTaskId.ToString()" name="id" />
+                <button type="submit">Delete</button>
+            </form>
+            
+            <button>View Detail</button>
+        </div>
+    }
+</div>
