@@ -6,6 +6,7 @@ BEGIN
 END
 
 CREATE DATABASE SchemaForD2LExtensionAPP;
+
 Go
 Use SchemaForD2LExtensionAPP;
 Go 
@@ -17,8 +18,8 @@ End
 Go
 Create Table Courses
 (
-	CourseId int primary key,
-	UserId int not null, 
+	CourseId int primary key Identity(0,1),
+	UserId nvarchar(450) not null, 
 	CourseName nvarchar(255) not null,
 	D2LCourseID nvarchar(255) unique not null,
 	Semester nvarchar(255) not null,
@@ -29,9 +30,14 @@ Create Table Courses
 	Constraint Uniqe_UserId_CourseID unique(UserId,CourseId)
 )
 Go
+-- Add Relationship with dbo.AspNetUsers Table
+Alter Table Courses Add Constraint FK_Courses_ASPNETUSERS Foreign key(UserId) References AspNetUsers(Id);
+Go
 -- Add non clustered index for filter course by semester
 Create Nonclustered Index IX_For_Filter_By_Term On dbo.Courses(Semester);
+CREATE INDEX IX_For_Get_Active_Course_For_User ON Courses(UserId);
 Go
+
 -- Table Assingments
 If Exists(Select Name From Sys.tables where Name = 'Assignments')
 Begin
@@ -109,5 +115,24 @@ Go
 -- non clustered index for faster query
 Create Nonclustered index IX_WeekId_Get_All_Material_For_This_Week on dbo.CourseMaterials(WeekId);
 Create Nonclustered index IX_MaterialType on dbo.CourseMaterials(MaterialType);
+
+-- Procedure CRUD Course 
+
+Create Procedure Courses_Create(@UserId nvarchar(450), @CourseName nvarchar(255), @D2LCourseId nvarchar(255), @Semester nvarchar(255), @Professor nvarchar(255), @CourseCode nvarchar(255))
+As
+Begin
+	SET NOCOUNT ON; -- for ADO.Net 
+	-- check duplication first
+	IF Exists(Select 1 From Courses Where UserId = @UserId And CourseCode = @CourseCode)
+	Begin
+		THROW 50001, 'Course already exists for this user.', 1;
+	End
+	Else
+	Begin
+		Insert into Courses(UserId, CourseName, D2LCourseID, Semester, Professor, CourseCode, CreateDate)
+		values(@UserId, @CourseName, @D2LCourseId, @Semester, @Professor, @CourseCode, GETDATE());
+	End
+End
+
 
 
