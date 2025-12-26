@@ -3,6 +3,7 @@ using D2LExtensionWebAPPSSR.Models.PomodoroFeatures;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Build.Framework;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.Eventing.Reader;
 
 namespace D2LExtensionWebAPPSSR.Controllers
@@ -16,9 +17,9 @@ namespace D2LExtensionWebAPPSSR.Controllers
             this.db = db;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var tasks = db.PomodoroTasks.ToList();
+            var tasks = await db.PomodoroTasks.ToListAsync();
             return View(tasks);
         }
 
@@ -77,6 +78,12 @@ namespace D2LExtensionWebAPPSSR.Controllers
             db.PomodoroTasks.Remove(task);
             await db.SaveChangesAsync();
             return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> StartPomodoro(int id)
+        {
+            var pTask = await db.PomodoroTasks.FindAsync(id);
+            return View(pTask);
         }
        
     }

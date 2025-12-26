@@ -1,0 +1,109 @@
+﻿@using D2LExtensionWebAPPSSR.Models.PomodoroFeatures
+@model PomodoroTask
+@{
+    ViewData["Title"] = "Pomodoro";
+}
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Field</th>
+            <th>Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>Title</strong></td>
+            <td>@Model.Title</td>
+        </tr>
+        <tr>
+            <td><strong>Description</strong></td>
+            <td>@Model.Description</td>
+        </tr>
+        <tr>
+            <td><strong>Expected Pomodoro Sessions</strong></td>
+            <td>@Model.ExpectedPomodoroSession</td>
+        </tr>
+    </tbody>
+</table>
+<hr /> 
+<div id="pomodoro-zone">
+    <div id="configuration">
+        <input id="main-timer" value="25"/>
+        <input id="short-break" value="5"/>
+        <input id="long-break" value="10" />
+        <button onclick="saveConfiguration();">Save</button>
+    </div>
+    <div id="option">
+        <h3 id="po">Pomodoro</h3>
+        <h3 id="sh">Short Break</h3>
+        <h3 id="lo">Long Break</h3>
+    </div>
+    <h1 id="pomodoro-timer">25:00</h1>
+    <button id="start">Start</button>
+    <button id="stop">Stop</button>
+    <button id="pause">Pause</button>
+</div>
+
+<script>
+    const pomodoro = document.getElementById("main-timer");
+    const shortBreak = document.getElementById("short-break");
+    const longBreak = document.getElementById("long-break");
+    const display = document.getElementById("pomodoro-timer");
+
+    let currentTimer = pomodoro;
+    let myInterval = null;
+    let endTimestamp;
+
+    function updateDisplay(minutes, seconds = 0) {
+        display.innerHTML = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    document.getElementById("po").addEventListener("click", () => {
+        currentTimer = pomodoro;
+        updateDisplay(currentTimer.value);
+    });
+
+    document.getElementById("sh").addEventListener("click", () => {
+        currentTimer = shortBreak;
+        updateDisplay(currentTimer.value);
+    });
+
+    document.getElementById("lo").addEventListener("click", () => {
+        currentTimer = longBreak;
+        updateDisplay(currentTimer.value);
+    });
+
+    function startTimer() {
+        clearInterval(myInterval);
+
+        const minutes = parseInt(currentTimer.value);
+        const durationMs = minutes * 60 * 1000;
+        endTimestamp = Date.now() + durationMs;
+
+        myInterval = setInterval(() => {
+            const remaining = endTimestamp - Date.now();
+
+            if (remaining <= 0) {
+                clearInterval(myInterval);
+                display.innerHTML = "00:00";
+                new Audio("https://www.freespecialeffects.co.uk/soundfx/scifi/electronic.wav").play();
+                return;
+            }
+
+            const mins = Math.floor(remaining / 60000);
+            const secs = Math.floor((remaining % 60000) / 1000);
+            updateDisplay(mins, secs);
+        }, 1000);
+    }
+
+    document.getElementById("start").addEventListener("click", startTimer);
+
+    document.getElementById("stop").addEventListener("click", () => {
+        clearInterval(myInterval);
+        display.innerHTML = "00:00";
+    });
+
+    document.getElementById("pause").addEventListener("click", () => {
+        clearInterval(myInterval);
+    });
+</script>

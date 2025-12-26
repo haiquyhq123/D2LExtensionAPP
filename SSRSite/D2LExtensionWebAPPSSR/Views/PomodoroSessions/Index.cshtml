@@ -18,8 +18,10 @@
                 <input type="hidden" value="@item.PromodoroTaskId.ToString()" name="id" />
                 <button type="submit">Delete</button>
             </form>
-            
-            <button>View Detail</button>
+            <form asp-action="StartPomodoro" asp-controller="PomodoroSessions" method="get">
+                <input type="hidden" value="@item.PromodoroTaskId.ToString()" name="id" />
+                <button type="submit">Start Pomodoro</button>
+            </form>
         </div>
     }
 </div>
