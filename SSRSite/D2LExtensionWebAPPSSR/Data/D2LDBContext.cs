@@ -8,6 +8,7 @@ namespace D2LExtensionWebAPPSSR.Data
 {
     public class D2LDBContext : IdentityDbContext<User>
     {
+        
         public D2LDBContext(DbContextOptions<D2LDBContext> options) : base(options)
         {
         }
@@ -49,10 +50,8 @@ namespace D2LExtensionWebAPPSSR.Data
             }
             
         }
-        DbSet<PomodoroTask> PomodoroTasks { get; set; }
-        DbSet<Session> Sessions { get; set; }
-
-
+        public DbSet<PomodoroTask> PomodoroTasks { get; set; }
+        public DbSet<Session> Sessions { get; set; }
 
     }
 }

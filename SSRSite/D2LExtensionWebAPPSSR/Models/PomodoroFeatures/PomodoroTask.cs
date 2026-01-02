@@ -9,10 +9,10 @@ namespace D2LExtensionWebAPPSSR.Models.PomodoroFeatures
         public int PromodoroTaskId { get; set; }
         [Required]
         [MaxLength(200)]
-        public string Title { get; set; }
+        public string? Title { get; set; }
         [MaxLength(1000)]
-        public string Description { get; set; }
-        public string Status { get; set; }
+        public string? Description { get; set; }
+        public string? Status { get; set; }
         [Required]
         public int  ExpectedPomodoroSession { get; set; }
         public int  CompletedPomodoroSession { get; set; }

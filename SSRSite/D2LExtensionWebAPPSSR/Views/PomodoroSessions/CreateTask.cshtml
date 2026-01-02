@@ -1,0 +1,21 @@
+﻿@using D2LExtensionWebAPPSSR.Models.PomodoroFeatures
+@model PomodoroTask
+@{
+    ViewData["Title"] = "CreateTask";
+}
+
+<h1>Create Pomodoro Task</h1>
+<form asp-action="CreateTask" asp-controller="PomodoroSessions" method="post">
+    <label asp-for="Title"></label>
+    <input asp-for="Title" name="Title" />
+    <span asp-validation-for="Title" class="text-danger"></span>
+    <br />
+    <label asp-for="Description"></label>
+    <input asp-for="Description" name = "Description"/>
+    <br />
+    <label asp-for="ExpectedPomodoroSession"></label>
+    <input asp-for="ExpectedPomodoroSession" name="ExpectedPomodoroSession" />
+    <button type="submit">Submit</button>
+
+
+</form>
