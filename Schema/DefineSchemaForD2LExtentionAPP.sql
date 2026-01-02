@@ -4,66 +4,34 @@ BEGIN
     ALTER DATABASE SchemaForD2LExtensionAPP SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
     DROP DATABASE SchemaForD2LExtensionAPP;
 END
-
 CREATE DATABASE SchemaForD2LExtensionAPP;
 Go
 Use SchemaForD2LExtensionAPP;
-Go 
--- Course Table
+Go
+
 If Exists(Select Name From Sys.tables where Name = 'Courses')
 Begin
-	Drop Table Courses;
+    Drop Table Courses;
 End
-Go
 Create Table Courses
 (
-	CourseId int primary key,
-	UserId int not null, 
-	CourseName nvarchar(255) not null,
-	D2LCourseID nvarchar(255) unique not null,
-	Semester nvarchar(255) not null,
-	Professor nvarchar(255) not null,
-	CourseCode nvarchar(255) not null,
-	CreateDate datetime default Getdate(),
-	IsArchived bit not null Default 0,
-	Constraint Uniqe_UserId_CourseID unique(UserId,CourseId)
+    Id int primary key identity(1,1),
+    UserId nvarchar(450) not null,
+    Title nvarchar(256) not null,
+    Description nvarchar(256),
+    Semester nvarchar(256),
+    Professor nvarchar(256),
+    CourseCode nvarchar(256) not null,
+    CreateDate datetime default GetDate()
 )
 Go
--- Add non clustered index for filter course by semester
-Create Nonclustered Index IX_For_Filter_By_Term On dbo.Courses(Semester);
+-- Add Relationship with AspNetUsers Table
+Alter Table Courses Add Constraint FK_Course_User Foreign key(UserId) References AspNetUsers(Id) On Delete Cascade;
 Go
--- Table Assingments
-If Exists(Select Name From Sys.tables where Name = 'Assignments')
-Begin
-	Drop Table Assignments;
-End
+-- Add possible index for faster query
+Create Nonclustered Index IX_Filter_Term On Courses(Semester);
 Go
-Create Table Assignments
-(
-	AssignmentId int primary key,
-	CourseId int not null, --enforce 1-to-mnay relationship
-	Title nvarchar(255) not null,
-	Description nvarchar(255),
-	DueDate datetime,
-	Weight int check(Weight between 0 and 100),
-	Status nvarchar(255),
-	Grade decimal(4,2) check(Grade is null or Grade between 0 and 100),
-	Priority int,
-	CreateDate datetime default Getdate(),
-	CompletedDate datetime default Getdate(),
-	-- Ensure 1 to many relationship
-	Constraint FK_Assignments_Courses Foreign key(CourseId) References Courses(CourseId) On Delete Cascade,
-	Constraint UK_CourseId_Title Unique(CourseId,Title) -- prevent for accidentially inserting two assignments with same title
-)
-Go
--- create non clustered for faster query
-Create Nonclustered index IX_CourseID on dbo.Assignments(CourseId);
-Create Nonclustered index IX_DueDate on dbo.Assignments(DueDate);
-Create Nonclustered index IX_Status on dbo.Assignments(Status);
--- composite index
-Create Nonclustered index IX_Priority_DueDate on dbo.Assignments(Priority DESC,DueDate ASC);
-Go
--- CourseWeeks Table
+
 if Exists(Select Name from sys.tables where Name = 'CourseWeeks')
 Begin
  Drop Table CourseWeeks;
@@ -71,43 +39,232 @@ End
 Go
 Create Table CourseWeeks
 (
-	WeekId int primary key,
-	CourseId int not null,
-	WeekTitle nvarchar(255),
-	WeekNumber int not null, 
-	Description nvarchar(255),
-	StartDate datetime,
-	EndDate datetime,
-	OrderIndex int,
-	IsPublished bit not null default 1,
-	Constraint FK_CourseId_CourseWeek_Table Foreign key(CourseId) References Courses(CourseId) on Delete cascade,
-	Constraint UniqueKey_CourseId_WeekNumber Unique(CourseId,WeekNumber),
-	Constraint CK_CourseWeeks_EndDate CHECK (EndDate >= StartDate)
+   Id int primary key identity(1,1),
+   CourseId int not null,
+   Title nvarchar(256) not null,
+   Description nvarchar(256)
 )
-GO
-if Exists(Select Name from sys.tables where Name = 'CourseMaterials')
+-- Add Relation 1-to-many with course
+Alter Table CourseWeeks Add Constraint FK_Course_CourseWeek Foreign key(CourseId) References Courses(Id);
+Go
+
+If Exists(Select Name From Sys.Tables where Name = 'Assignments')
 Begin
- Drop Table CourseMaterials;
+    Drop Table Assignments;
+End
+Create Table Assignments
+(
+    Id int primary key Identity(1,1),
+    CourseWeekId int not null,
+    Title nvarchar(256) not null,
+    Description nvarchar(256),
+    DueDate datetime not null,
+    Grade int,
+    Weight int not null,
+    Status nvarchar(256),
+    Priority int not null,
+    CreateDate datetime default GetDate(),
+    CompleteDate datetime,
+    EstimatedHours decimal(4,1) not null default 1.0
+)
+Go
+-- Add Relationship and constraint
+Alter Table Assignments Add Constraint FK_CW_Assignment Foreign key(CourseWeekId) References CourseWeeks(Id) On Delete Cascade;
+Alter Table Assignments Add Constraint UK_CourseId_Title Unique(CourseWeekId, Title); -- make unique for each course
+Alter Table Assignments Add Constraint CK_Grade check(Grade is null or Grade between 0 and 100);
+Alter Table Assignments Add Constraint CK_Weight check(Weight between 0 and 100);
+Alter Table Assignments Add Constraint CK_Status check(Status in ('Finish','InProcess','OverDue','NotStarted'));
+-- Add Possible Index For Faster Query
+Create Nonclustered index IX_DueDate on Assignments(DueDate);
+Create Nonclustered index IX_Status on Assignments(Status);
+Create Nonclustered index IX_Priority_DueDate on Assignments(Priority DESC, DueDate ASC);
+-- View For Aassignment detail
+Go
+Create View Assignment_Detail
+As
+Select a.Id, a.Title, a.DueDate, a.Status, a.Priority, a.EstimatedHours, c.UserId, c.Title AS CourseTitle, cw.Title AS WeekTitle
+From Assignments as a
+Inner join CourseWeeks as cw 
+On a.CourseWeekId = cw.Id
+Inner join Courses c ON cw.CourseId = c.Id;
+Go
+-- CRUD Opration Course
+-- For Calendar
+Create Procedure Get_Calendar(@UsedId nvarchar(450),@StartDate datetime, @EndDate datetime)
+As
+Begin
+    -- check UserId must exist in database 
+    IF Exists(Select 1 From AspNetUsers Where Id = @UsedId)
+        Begin
+            --Can Get rn
+            Select a.Id, a.Title, a.DueDate, a.Status, a.Priority, a.EstimatedHours, c.Title AS CourseTitle, cw.Title AS WeekTitle From Assignments as a
+            Inner join CourseWeeks as cw on a.CourseWeekId = cw.Id
+            Inner join Courses c on cw.CourseId = c.Id
+            Where c.UserId = @UsedId and a.DueDate Between @StartDate And @EndDate
+            Order by a.Priority DESC, a.DueDate ASC;
+        End
+    ELSE
+        Begin
+            Throw 50000,'Error User Id', 1;
+        End
 End
 Go
-Create table CourseMaterials
-(
-	MaterialId int primary key,
-	WeekId int not null,
-	MaterialName nvarchar(255),
-	MaterialType nvarchar(255),
-	FileUrl nvarchar(255),
-	Description nvarchar(255),
-	FileSizeKb int check(FileSizeKb between 0 and 102400),
-	UploadDate datetime default Getdate(),
-	LastAccessedDate datetime,
-	ViewCount int default 0,
-	IsDownloadable bit not null default 1,
-	constraint FK_WeekId_CourseMaterials_Table Foreign key(WeekId) References CourseWeeks(WeekId) On Delete Cascade
-)
+Create Procedure Get_Important_Tasks(@UserId nvarchar(450), @Days Int = 7, @NumberOfTask Int=15)
+As
+Begin
+    IF Exists(Select 1 From AspNetUsers Where Id = @UserId)
+        Begin
+            --Can Get rn
+            Select Top (@NumberOfTask) a.Id, a.Title, a.DueDate, a.Status, a.Priority, a.EstimatedHours, c.Title AS CourseTitle, cw.Title AS WeekTitle From Assignments as a
+            Inner join CourseWeeks as cw on a.CourseWeekId = cw.Id
+            Inner join Courses c on cw.CourseId = c.Id
+            Where c.UserId = @UserId and a.Status <> 'Finish' and a.DueDate <= DATEADD(DAY,@Days,GETDATE());
+        End
+    ELSE
+        Begin
+            Throw 50000,'Error User Id', 1;
+        End
+End
 Go
--- non clustered index for faster query
-Create Nonclustered index IX_WeekId_Get_All_Material_For_This_Week on dbo.CourseMaterials(WeekId);
-Create Nonclustered index IX_MaterialType on dbo.CourseMaterials(MaterialType);
+-- CRUD on Assigment
+Create Procedure Create_Assignment(@UserId nvarchar(450), @CourseWeekId int, @Title nvarchar(256), @Description nvarchar(256) = '', @DueDate datetime, @Grade int, @Weight int, @Status nvarchar(256), @EstimatedHours decimal(4,1) = 1.0 )
+As
+Begin
+    IF Exists(Select 1 From AspNetUsers Where Id = @UserId) And Exists(Select 1 From CourseWeeks Where Id = @CourseWeekId)
+    Begin
+        --Can Insert rn
+        Insert into Assignments(CourseWeekId, Title, Description, DueDate, Grade, Weight, Status, EstimatedHours)
+        Values(@CourseWeekId, @Title, @Description, @DueDate, @Grade, @Weight, @Status, @EstimatedHours); 
+    End
+    ELSE
+    Begin
+        Throw 50000,'Error User Id Or WeekId', 1;
+    End
+End
+Go
+Create Procedure Update_Assignment_Status(@AssignmentId int, @Status nvarchar(256))
+As
+Begin
+ IF Exists(Select 1 From Assignments Where Id = @AssignmentId) 
+    Begin
+        Update Assignments SET Status = @Status, CompleteDate = Case
+            When @Status = 'Finish' Then GETDATE()
+            Else Null
+        End
+        Where Id = @AssignmentId;
+    End
+    ELSE
+    Begin
+        Throw 50000,'Error User Id', 1;
+    End
+End
+Go
+-- Trigger: Auto-Update OverDue
+Create Trigger Assignment_OverDue On Assignments After Insert, Update
+As 
+Begin
+    Update a Set Status = 'OverDue' From Assignments as a
+    Join inserted i on a.Id = i.Id 
+    Where a.Status <> 'Finish' And a.DueDate < GETDATE();
+End
+-- Calculate Priority
+Go
+Create trigger Assignment_Priority On Assignments After insert, update
+As
+Begin
+	Update a
+	Set priority =
+		case
+			when a.duedate < getdate() then 100
+			when datediff(day, getdate(), a.duedate) <= 1 then 90
+			when datediff(day, getdate(), a.duedate) <= 3 then 75
+			when datediff(day, getdate(), a.duedate) <= 7 then 50
+			else 25
+		end + isnull(a.weight, 0)
+	from Assignments a
+	inner join inserted i on a.id = i.id;
+End
+Go
 
+-- CRUD on COURSE
+Create procedure Create_Course(@UserId nvarchar(450),@title nvarchar(256),@description nvarchar(256) = null,@semester nvarchar(256) = null,@professor nvarchar(256) = null,@coursecode nvarchar(256))
+As
+Begin
+	If Exists(Select 1 from AspNetUsers Where Id = @UserId)
+	Begin
+		Insert into Courses(UserId, Title, Description, Semester, Professor, CourseCode)
+		values(@UserId, @title, @description, @semester, @professor, @coursecode);
+	End
+	Else
+	Begin
+		Throw 50000, 'error user id', 1;
+	End
+End
+Go
+Create procedure Get_Courses_By_User(@Userid nvarchar(450))
+As
+Begin
+	If Exists(Select 1 from AspNetUsers Where id = @userid)
+	Begin
+		Select * from Courses Where UserId = @UserId order by CreateDate desc;
+	End
+	Else
+	Begin
+		Throw 50000, 'error user id', 1;
+	End
+End
+Go
+Create procedure Update_Course(@CourseId int, @title nvarchar(256), @description nvarchar(256), @semester nvarchar(256), @professor nvarchar(256), @coursecode nvarchar(256))
+As
+Begin
+	Update Courses Set Title = @title, Description = @description, Semester = @semester, Professor = @professor, Coursecode = @coursecode Where Id = @CourseId;
+End
+Go
+Create procedure Delete_Course(@CourseId int)
+As
+Begin
+	Delete from Courses Where id = @courseid;
+End
+Go
+-- CRUD on CourseWeek
+Create Procedure Get_CourseWeeks_By_Course(@courseid int)
+As
+Begin
+	If exists(Select 1 from Courses Where id = @courseid)
+	Begin
+		Select * from CourseWeeks Where CourseId = @courseid Order by id ASC;
+	End
+	Else
+	Begin
+		throw 50000, 'error course id', 1;
+	End
+End
+Go
+Create procedure Create_CourseWeek(@courseid int, @title nvarchar(256), @description nvarchar(256) = null)
+As
+Begin
+	If exists(select 1 from Courses where Id = @courseid)
+	Begin
+		Insert into CourseWeeks(courseid,title,description)
+		Values(@courseid,@title,@description);
+	End
+	Else
+	Begin
+		Throw 50000, 'error course id', 1;
+	End
+End
+Go
+Create procedure Update_CourseWeek(@courseweekid int, @title nvarchar(256), @description nvarchar(256))
+As
+Begin
+	Update CourseWeeks Set title = @title, description = @description Where id = @courseweekid;
+End
+Go
+Create procedure Delete_CourseWeek(@courseweekid int)
+As
+Begin
+	Delete from CourseWeeks Where id = @courseweekid;
+End
+go
 
+-- Trigger For Course And CourseWeek Table

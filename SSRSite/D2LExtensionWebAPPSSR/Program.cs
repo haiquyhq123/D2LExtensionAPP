@@ -1,10 +1,12 @@
 using D2LExtensionWebAPPSSR.Data;
 using D2LExtensionWebAPPSSR.Models;
+using D2LExtensionWebAPPSSR.Service;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-
+// Add course service
+builder.Services.AddScoped<ICourseOperations, CourseOperations>();
 // Register AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
 // Add services to the container.
