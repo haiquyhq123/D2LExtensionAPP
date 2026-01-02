@@ -43,6 +43,18 @@ namespace D2LExtensionWebAPPSSR.Controllers
             }
             await _userManager.AddToRoleAsync(user, "NORMAL_USER");
             return RedirectToAction(nameof(HomeController.Index), "Home");
+
+        }
+        [HttpGet]
+        public IActionResult Login()
+        {
+            return View();
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(UserLoginModel userModel)
+        {
+            return View();
         }
     }
 }

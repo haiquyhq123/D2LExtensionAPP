@@ -1,0 +1,19 @@
+﻿@model UserLoginModel
+@{
+    ViewData["title"] = "Login";
+}
+<h1>Login</h1>
+<form asp-action="Login" asp-controller="Account" method="post">
+    <label asp-for="Email"></label>
+    <input asp-for="Email"/>
+    <span asp-validation-for="Email" class="text-danger"></span>
+
+    <label asp-for="Password"></label>
+    <input asp-for="Password" />
+    <span asp-validation-for="Password" class="text-danger"></span>
+
+    <label class="form-check-label">
+        <input class="form-check-input" asp-for="RememberMe" /> @Html.DisplayNameFor(model => model.RememberMe)
+    </label>
+    <input type="submit" value="Log In" />
+</form>

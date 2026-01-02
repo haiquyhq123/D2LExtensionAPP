@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 // Register AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
 // Add services to the container.
@@ -12,8 +13,16 @@ builder.Services.AddControllersWithViews();
 
 //Set up the connection string
 builder.Services.AddDbContext<D2LDBContext>(opts => opts.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-// Set up the AddIdentity
-builder.Services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<D2LDBContext>();
+
+// Set up the AddIdentity with several defined attribute on password
+builder.Services.AddIdentity<User, IdentityRole>(opt =>
+{
+    opt.Password.RequiredLength = 7;
+    opt.Password.RequireDigit = false;
+    opt.Password.RequireUppercase = false;
+    opt.User.RequireUniqueEmail = true;
+
+}).AddEntityFrameworkStores<D2LDBContext>();
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.
