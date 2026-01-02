@@ -1,0 +1,16 @@
+﻿@using D2LExtensionWebAPPSSR.Models.PomodoroFeatures
+@model PomodoroTask
+@{
+    ViewData["Title"] = "Update Task";
+}
+<h1>Update A Task</h1>
+<form asp-action="UpdateTask" asp-controller="PomodoroSessions" method="post">
+    <input type="hidden" value="@Model.PromodoroTaskId.ToString()" asp-for="PromodoroTaskId" />
+    <label asp-for="Title" ></label>
+    <input name="Title" value="@Model.Title"/>
+    <br />
+    <label asp-for="ExpectedPomodoroSession"></label>
+    <input name="ExpectedPomodoroSession" value="@Model.ExpectedPomodoroSession" />
+
+    <button type="submit">Update</button>
+</form>
