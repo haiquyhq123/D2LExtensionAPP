@@ -1,10 +1,13 @@
 using D2LExtensionWebAPPSSR.Data;
+using D2LExtensionWebAPPSSR.Factory;
 using D2LExtensionWebAPPSSR.Models;
 using D2LExtensionWebAPPSSR.Service;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
 // Add course service
 builder.Services.AddScoped<ICourseOperations, CourseOperations>();
 // Register AutoMapper
@@ -14,9 +17,18 @@ builder.Services.AddControllersWithViews();
 
 //Set up the connection string
 builder.Services.AddDbContext<D2LDBContext>(opts => opts.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-// Set up the AddIdentity
-builder.Services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<D2LDBContext>();
 
+// Set up the AddIdentity with several defined attribute on password
+builder.Services.AddIdentity<User, IdentityRole>(opt =>
+{
+    opt.Password.RequiredLength = 7;
+    opt.Password.RequireDigit = false;
+    opt.Password.RequireUppercase = false;
+    opt.User.RequireUniqueEmail = true;
+
+}).AddEntityFrameworkStores<D2LDBContext>();
+
+builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, CustomClaimsFactory>(); ;
 var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -31,6 +43,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
