@@ -6,6 +6,7 @@
 <h1>Details</h1>
 <hr />
 <div id="details">
+    <button><a asp-action="CreateTask" asp-controller="PomodoroSessions">Create Task</a></button>
     @foreach(var item in Model)
     {
         <div class="items">

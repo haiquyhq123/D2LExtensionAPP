@@ -1,4 +1,5 @@
-﻿@{
+﻿@model List<string>
+@{
     ViewData["Title"] = "Home Page";
 }
 
@@ -6,7 +7,31 @@
 </div>
 <div id="main">
     <div id="course-display">
-
+        <table class="table table-bordered table-striped table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Id</th>
+                    <th>Title</th>
+                    <th>Course Code</th>
+                    <th>Semester</th>
+                    <th>Professor</th>
+                    <th>Created Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    var itemColumn = item.Split('|');
+                    <tr>
+                        @foreach (var col in itemColumn)
+                        {
+                            <td>@col</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <button><a asp-controller="Home" asp-action="CreateCourse">Create</a></button>
     </div>
     <div id="assignment-display">
 
