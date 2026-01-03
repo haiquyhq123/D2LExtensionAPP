@@ -2,19 +2,22 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using D2LExtensionWebAPPSSR.Models;
 using Microsoft.AspNetCore.Authorization;
+using D2LExtensionWebAPPSSR.Service;
 
 namespace D2LExtensionWebAPPSSR.Controllers;
 
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
+    private readonly ICourseOperations _co;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(ILogger<HomeController> logger, ICourseOperations CO)
     {
         _logger = logger;
+        _co = CO;
     }
 
-    public IActionResult Index()
+    public IActionResult Index(string userId)
     {
         return View();
     }
