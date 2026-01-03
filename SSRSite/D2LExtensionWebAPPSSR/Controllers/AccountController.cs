@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
 using D2LExtensionWebAPPSSR.Models;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace D2LExtensionWebAPPSSR.Controllers
@@ -10,11 +13,13 @@ namespace D2LExtensionWebAPPSSR.Controllers
     {
         private readonly IMapper _mapper;
         private readonly UserManager<User> _userManager; //provide set of helper method to help us manage a user in our application
+        private readonly SignInManager<User> _signInManager;
 
-        public AccountController(IMapper mapper, UserManager<User> userManager)
+        public AccountController(IMapper mapper, UserManager<User> userManager, SignInManager<User> signInManager)
         {
             _mapper = mapper;
             _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         [HttpGet]
@@ -46,15 +51,67 @@ namespace D2LExtensionWebAPPSSR.Controllers
 
         }
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string returnUrl = null)
         {
+            ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(UserLoginModel userModel)
+        public async Task<IActionResult> Login(UserLoginModel userModel, string returnUrl = null)
         {
-            return View();
+            if (!ModelState.IsValid)
+            {
+                return View(userModel);
+            }
+            // Manual approach
+            //var user = await _userManager.FindByEmailAsync(userModel.Email);
+            //if(user != null && await _userManager.CheckPasswordAsync(user, userModel.Password))
+            //{
+            //    var identity = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
+            //    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
+            //    identity.AddClaim(new Claim(ClaimTypes.Name, user.UserName));
+
+            //    await HttpContext.SignInAsync(IdentityConstants.ApplicationScheme, new ClaimsPrincipal(identity));
+            //    return RedirectToLocal(returnUrl);
+
+            //}
+            //else
+            //{
+            //    ModelState.AddModelError("", "Invalid UserName or Password");
+            //    return View();
+            //}
+            // Auto approach
+            var result = await _signInManager.PasswordSignInAsync(userModel.Email, userModel.Password, userModel.RememberMe, false);
+            if (result.Succeeded)
+            {
+                return RedirectToLocal(returnUrl);
+            }
+            else
+            {
+                ModelState.AddModelError("", "Invalid UserName or Password");
+                return View();
+            }
+
+        }
+        private IActionResult RedirectToLocal(string returnUrl)
+        {
+            if (Url.IsLocalUrl(returnUrl)) //make sure this point back to the website not other link
+            {
+               
+                return Redirect(returnUrl);
+            }
+            else
+            {
+                return RedirectToAction(nameof(HomeController.Index), "Home");
+            }
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            return RedirectToAction(nameof(HomeController.Index),"Home");
         }
     }
 }

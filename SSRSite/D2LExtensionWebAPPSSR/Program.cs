@@ -1,4 +1,5 @@
 using D2LExtensionWebAPPSSR.Data;
+using D2LExtensionWebAPPSSR.Factory;
 using D2LExtensionWebAPPSSR.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,7 @@ builder.Services.AddIdentity<User, IdentityRole>(opt =>
 
 }).AddEntityFrameworkStores<D2LDBContext>();
 
+builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, CustomClaimsFactory>(); ;
 var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -38,6 +40,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
