@@ -12,10 +12,12 @@
                 <tr>
                     <th>Id</th>
                     <th>Title</th>
+                    <th>Desciption</th>
                     <th>Course Code</th>
                     <th>Semester</th>
                     <th>Professor</th>
                     <th>Created Date</th>
+                    <th>Operations</th>
                 </tr>
             </thead>
             <tbody>
@@ -27,6 +29,16 @@
                         {
                             <td>@col</td>
                         }
+                        <td>
+                            <form asp-action="UpdateCourse" asp-controller="Home" method="get">
+                                <input type="hidden" name="Id" value="@itemColumn[0]"/>
+                                <button type="submit">Update</button>
+                            </form>
+                            <form asp-action="DeleteCourse" asp-controller="Home" method="post">
+                                <input type="hidden" name="Id" value="@itemColumn[0]" />
+                                <button type="submit">Delete</button>
+                            </form>
+                        </td>
                     </tr>
                 }
             </tbody>

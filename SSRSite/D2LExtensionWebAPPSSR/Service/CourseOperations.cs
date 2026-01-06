@@ -166,7 +166,7 @@ namespace D2LExtensionWebAPPSSR.Service
                     SqlDataReader sdr = cmd.ExecuteReader();
                     while (sdr.Read())
                     {
-                        string rowLine = sdr["Id"].ToString() + "|" + sdr["Title"] + "|" + sdr["CourseCode"].ToString() + "|" + sdr["Semester"].ToString() + "|" + sdr["Professor"].ToString() + "|" + sdr["CreateDate"].ToString();
+                        string rowLine = sdr["Id"].ToString() + "|"+ sdr["Title"]  +"|" + sdr["Description"] + "|" + sdr["CourseCode"].ToString() + "|" + sdr["Semester"].ToString() + "|" + sdr["Professor"].ToString() + "|" + sdr["CreateDate"].ToString();
                         result.Add(rowLine);
                     }
                 
@@ -179,7 +179,7 @@ namespace D2LExtensionWebAPPSSR.Service
             return result;
         }
 
-        public void UpdateCourse(int CourseId, string title, string description, string semester, string professor, string coursecode)
+        public void UpdateCourse(int CourseId, string title, string? description, string? semester, string? professor, string coursecode)
         {
             try
             {

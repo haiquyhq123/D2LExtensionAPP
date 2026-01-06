@@ -41,6 +41,40 @@ public class HomeController : Controller
         return RedirectToAction("Index");
     }
     [Authorize]
+    [HttpGet]
+    public IActionResult UpdateCourse(int Id)
+    {
+        string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        List<string> ListOfCourse = _co.GetCoursesByUser(userId);
+        string[] courseNeedToUpdate = [];
+        foreach (var item in ListOfCourse)
+        {
+            string[] res = item.Split("|");
+            if (res[0] == Id.ToString())
+            {
+                courseNeedToUpdate = res;
+                break;
+            }
+        }
+        return View(courseNeedToUpdate);
+    }
+    [Authorize]
+    [HttpPost]
+    [AutoValidateAntiforgeryToken]
+    public IActionResult UpdateCourse(int Id,string title,string courseCode, string? description, string? semester, string? professor)
+    {
+        _co.UpdateCourse(Id, title, description, semester, professor, courseCode);
+        return RedirectToAction("Index");
+    }
+    [Authorize]
+    [HttpPost]
+    [AutoValidateAntiforgeryToken]
+    public IActionResult DeleteCourse(int Id)
+    {
+        _co.DeleteCourse(Id);
+        return RedirectToAction("Index");
+    }
+    [Authorize]
     public IActionResult Privacy()
     {
         return View();
