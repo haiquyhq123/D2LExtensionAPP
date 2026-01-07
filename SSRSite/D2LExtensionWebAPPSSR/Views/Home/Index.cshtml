@@ -24,10 +24,11 @@
                 @foreach (var item in Model)
                 {
                     var itemColumn = item.Split('|');
+                    string idOfCourse = itemColumn[0];
                     <tr>
                         @foreach (var col in itemColumn)
                         {
-                            <td>@col</td>
+                            <td><a asp-controller="CourseWeekOperations" asp-action="Index" asp-route-id=@idOfCourse>@col</a></td>
                         }
                         <td>
                             <form asp-action="UpdateCourse" asp-controller="Home" method="get">

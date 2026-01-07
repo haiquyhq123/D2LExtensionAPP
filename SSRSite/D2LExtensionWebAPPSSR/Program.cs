@@ -10,6 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add course service
 builder.Services.AddScoped<ICourseOperations, CourseOperations>();
+// Add Course Week Service
+builder.Services.AddScoped<ICourseWeekOperations, CourseWeekOperations>();
 // Register AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
 // Add services to the container.
