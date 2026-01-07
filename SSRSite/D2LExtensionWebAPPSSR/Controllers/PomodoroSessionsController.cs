@@ -61,7 +61,6 @@ namespace D2LExtensionWebAPPSSR.Controllers
             task.Title = pt.Title;
             task.ExpectedPomodoroSession = pt.ExpectedPomodoroSession;
             await db.SaveChangesAsync();
-            await db.SaveChangesAsync();
             return RedirectToAction("Index");
             
         }

@@ -1,4 +1,5 @@
-﻿@{
+﻿@model List<string>
+@{
     ViewData["Title"] = "Home Page";
 }
 
@@ -6,7 +7,44 @@
 </div>
 <div id="main">
     <div id="course-display">
-
+        <table class="table table-bordered table-striped table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Id</th>
+                    <th>Title</th>
+                    <th>Desciption</th>
+                    <th>Course Code</th>
+                    <th>Semester</th>
+                    <th>Professor</th>
+                    <th>Created Date</th>
+                    <th>Operations</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    var itemColumn = item.Split('|');
+                    string idOfCourse = itemColumn[0];
+                    <tr>
+                        @foreach (var col in itemColumn)
+                        {
+                            <td><a asp-controller="CourseWeekOperations" asp-action="Index" asp-route-id=@idOfCourse>@col</a></td>
+                        }
+                        <td>
+                            <form asp-action="UpdateCourse" asp-controller="Home" method="get">
+                                <input type="hidden" name="Id" value="@itemColumn[0]"/>
+                                <button type="submit">Update</button>
+                            </form>
+                            <form asp-action="DeleteCourse" asp-controller="Home" method="post">
+                                <input type="hidden" name="Id" value="@itemColumn[0]" />
+                                <button type="submit">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <button><a asp-controller="Home" asp-action="CreateCourse">Create</a></button>
     </div>
     <div id="assignment-display">
 

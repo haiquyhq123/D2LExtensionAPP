@@ -1,0 +1,20 @@
+﻿@{
+    ViewData["title"] = "Create Course";
+}
+<form method="post" asp-action="CreateCourse" asp-controller="Home">
+    <label class="form-label">Title</label>
+    <input name="title" class="form-control" required />
+    <br />
+    <label class="form-label">Course Code</label>
+    <input name="coursecode" class="form-control" required />
+    <br />
+    <label class="form-label">Description</label>
+    <textarea name="description" class="form-control"></textarea>
+    <br />
+    <label class="form-label">Semester</label>
+    <input name="semester" class="form-control" />
+    <br />
+    <label class="form-label">Professor</label>
+    <input name="professor" class="form-control" />
+    <button type="submit">Create Course</button>
+</form>

@@ -1,0 +1,59 @@
+﻿@model List<string>
+
+@{
+    ViewData["Title"] = "Course Weeks";
+    string? CourseId = ViewData["CourseId"].ToString(); 
+}
+
+<div>  
+    <div>
+        <div>
+            <h3>Create New Week</h3>
+        </div>
+        <div>
+            <form method="post" asp-action="CreateCourseWeeks" asp-controller="CourseWeekOperations">
+                <input type="hidden" name="CourseId" value="@CourseId" />
+                <label class="form-label">Week Title</label>
+                <input class="form-control" name="Title" required />
+                <label class="form-label">Description</label>
+                <input class="form-control" name="Description" />
+                <button type="submit">Add Week</button>
+            </form>
+        </div>
+    </div>
+    <div>
+        <div>Current Weeks</div>
+        <ul>
+
+            @if (Model != null && Model.Count > 0)
+            {
+                foreach (var item in Model)
+                {
+                    var cols = item.Split('|');
+                    var weekId = cols[0];
+                    var title = cols[2];
+                    var description = cols[3];
+
+                    <li>
+                        <div>
+                            <strong>@title</strong><br />
+                            <small>@description</small>
+                        </div>
+                        <a asp-controller="Assignment" asp-action="Index" asp-route-courseWeekId="@weekId">Create Assignment</a>
+                        <form asp-action="DeleteCourseWeek" asp-controller="CourseWeekOperations" method="post">
+                            <input type="hidden" value="@weekId" name="WeekId" />
+                            <input type="hidden" value="@CourseId" name="CourseId" />
+                            <button type="submit">Delete</button>
+                        </form>
+
+                    </li>
+                }
+            }
+            else
+            {
+                <li> No course weeks yet.</li>
+            }
+        </ul>
+    </div>
+
+</div>

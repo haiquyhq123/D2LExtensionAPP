@@ -1,0 +1,22 @@
+﻿@model string[]
+@{
+    ViewData["title"] = "Update Course";
+}
+<form asp-action="UpdateCourse" asp-controller="Home" method="post">
+    <input type="hidden" name="Id" value="@Model[0]" />
+    <label class="form-label">Title</label>
+    <input name="title" class="form-control" value="@Model[1]" required />
+    <br />
+    <label class="form-label">Course Code</label>
+    <input name="coursecode" class="form-control" value="@Model[3]" required />
+    <br />
+    <label class="form-label">Description</label>
+    <textarea name="description" class="form-control">@Model[2]</textarea>
+    <br />
+    <label class="form-label">Semester</label>
+    <input name="semester" class="form-control" value="@Model[4]" />
+    <br />
+    <label class="form-label">Professor</label>
+    <input name="professor" class="form-control" value="@Model[5]" />
+    <button type="submit">Update Course</button>
+</form>
