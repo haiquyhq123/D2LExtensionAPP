@@ -159,6 +159,19 @@ Begin
     End
 End
 Go
+-- Delete Assignment
+Create Procedure Delete_Assignment(@WeekId Int, @AssignmentId Int)
+As
+Begin
+    If(Exists(Select 1 From CourseWeeks as cw inner join Assignments as a on cw.Id = a.CourseWeekId where cw.Id = @WeekId And a.Id = @AssignmentId))
+    Begin
+        Delete From Assignments Where Id = @AssignmentId;
+    End
+    ELse
+    Begin
+        Throw 50000,'CourseWeek Not Found Or Assignment Not Found',1;
+    End
+End
 -- Trigger: Auto-Update OverDue
 Create Trigger Assignment_OverDue On Assignments After Insert, Update
 As 
@@ -268,3 +281,5 @@ End
 go
 
 -- Trigger For Course And CourseWeek Table
+-- Fix Priority Error In Add Assingment
+ALTER TABLE Assignments ADD CONSTRAINT Assignments_Priority DEFAULT 0 FOR Priority;

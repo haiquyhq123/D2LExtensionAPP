@@ -1,5 +1,76 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model List<string>
+
 @{
+    ViewData["Title"] = "Assignments";
+    string? CourseWeekId = ViewData["CourseWeekId"].ToString();
 }
+
+<div>
+
+    <div>
+        <h3>Create New Assignment</h3>
+
+        <form method="post" asp-action="CreateAssignment" asp-controller="Assingment">
+            <input type="hidden" name="courseWeekId" value="@CourseWeekId" />
+
+            <label>Title</label>
+            <input class="form-control" name="title" required />
+
+            <label>Description</label>
+            <input class="form-control" name="description" />
+
+            <label>Due Date</label>
+            <input class="form-control" type="datetime-local" name="dueDate" required />
+
+            <label>Weight</label>
+            <input class="form-control" type="number" name="weight" required />
+
+            <label>Estimated Hours</label>
+            <input class="form-control" type="number" step="0.1" name="estimatedHours" value="1.0" />
+
+            <button type="submit">Add Assignment</button>
+        </form>
+    </div>
+
+    <hr />
+
+    <div>
+        <h4>Current Assignments</h4>
+
+        <ul>
+            @if (Model != null && Model.Count > 0)
+            {
+                foreach (var item in Model)
+                {
+                    var cols = item.Split('|');
+
+                    var assignmentId = cols[0];
+                    var title = cols[1];
+                    var dueDate = cols[2];
+                    var status = cols[3];
+                    var priority = cols[4];
+                    var hours = cols[5];
+
+                    <li>
+                        <div>
+                            <strong>@title</strong><br />
+                            <small>Due: @dueDate</small><br />
+                            <small>Status: @status | Priority: @priority | Hours: @hours</small>
+                        </div>
+
+                        <form method="post" asp-action="DeleteAssignment" asp-controller="Assingment">
+                            <input type="hidden" name="weekId" value="@CourseWeekId" />
+                            <input type="hidden" name="assignmentId" value="@assignmentId" />
+                            <button type="submit">Delete</button>
+                        </form>
+                    </li>
+                }
+            }
+            else
+            {
+                <li>No assignments yet.</li>
+            }
+        </ul>
+    </div>
+
+</div>

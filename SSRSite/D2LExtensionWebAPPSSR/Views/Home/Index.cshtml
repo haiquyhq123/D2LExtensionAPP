@@ -28,7 +28,7 @@
                     <tr>
                         @foreach (var col in itemColumn)
                         {
-                            <td><a asp-controller="CourseWeekOperations" asp-action="Index" asp-route-id=@idOfCourse>@col</a></td>
+                            <td><a asp-controller="CourseWeekOperations" asp-action="Index" asp-route-id=@idOfCourse asp-route-title="@itemColumn[1]">@col</a></td>
                         }
                         <td>
                             <form asp-action="UpdateCourse" asp-controller="Home" method="get">

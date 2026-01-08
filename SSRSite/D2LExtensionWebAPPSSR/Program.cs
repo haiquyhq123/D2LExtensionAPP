@@ -7,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
+// Add Assingment Service
+builder.Services.AddScoped<IAssignmentOperations,AssingmentOperations>();
 // Add course service
 builder.Services.AddScoped<ICourseOperations, CourseOperations>();
 // Add Course Week Service
