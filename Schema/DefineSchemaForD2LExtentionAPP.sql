@@ -87,7 +87,7 @@ From Assignments as a
 Inner join CourseWeeks as cw 
 On a.CourseWeekId = cw.Id
 Inner join Courses c ON cw.CourseId = c.Id;
-Go
+
 -- CRUD Opration Course
 -- For Calendar
 Create Procedure Get_Calendar(@UsedId nvarchar(450),@StartDate datetime, @EndDate datetime)

@@ -1,12 +1,54 @@
-﻿@model List<string>
+﻿@using System.Dynamic
+@model dynamic
+
 @{
     ViewData["Title"] = "Home Page";
 }
 
 <div id="calendar-display">
 </div>
-<div id="main">
-    <div id="course-display">
+
+<div class="row">
+
+    <div class="col-md-3" id="assignment-display">
+        <h3>The Stack</h3>
+        <hr />
+
+        @if (Model.LAssignment.Count == 0)
+        {
+            <div class="alert alert-success">No pending tasks!</div>
+        }
+        else
+        {
+            <ul class="list-group">
+                @foreach (var item in Model.LAssignment)
+                {
+                    var data = item.Split('|');
+
+                    if (data.Length > 6)
+                    {
+                        string title = data[1];
+                        string dueDate = data[2];
+                        string priority = data[4];
+                        string course = data[6];
+
+                        <li class="list-group-item">
+                            <b>@title</b> <br />
+
+                            <span class="text-muted">Course: @course</span> <br />
+
+                            <span>Priority: @priority</span> <br />
+
+                            <span class="text-danger">Due: @dueDate</span>
+                        </li>
+                    }
+                }
+            </ul>
+        }
+    </div>
+
+    <div class="col-md-9" id="course-display">
+        <h3>My Courses</h3>
         <table class="table table-bordered table-striped table-hover">
             <thead class="table-light">
                 <tr>
@@ -21,32 +63,41 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in Model)
+                @foreach (var item in Model.LCourse)
                 {
                     var itemColumn = item.Split('|');
-                    string idOfCourse = itemColumn[0];
-                    <tr>
-                        @foreach (var col in itemColumn)
-                        {
-                            <td><a asp-controller="CourseWeekOperations" asp-action="Index" asp-route-id=@idOfCourse asp-route-title="@itemColumn[1]">@col</a></td>
-                        }
-                        <td>
-                            <form asp-action="UpdateCourse" asp-controller="Home" method="get">
-                                <input type="hidden" name="Id" value="@itemColumn[0]"/>
-                                <button type="submit">Update</button>
-                            </form>
-                            <form asp-action="DeleteCourse" asp-controller="Home" method="post">
-                                <input type="hidden" name="Id" value="@itemColumn[0]" />
-                                <button type="submit">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
+
+                    if (itemColumn.Length > 0)
+                    {
+                        string idOfCourse = itemColumn[0];
+                        string titleOfCourse = itemColumn.Length > 1 ? itemColumn[1] : "";
+
+                        <tr>
+                            @foreach (var col in itemColumn)
+                            {
+                                <td>
+                                    <a asp-controller="CourseWeekOperations"
+                                       asp-action="Index"
+                                       asp-route-id="@idOfCourse"
+                                       asp-route-title="@titleOfCourse">@col</a>
+                                </td>
+                            }
+                            <td>
+                                <form asp-action="UpdateCourse" asp-controller="Home" method="get" style="display:inline;">
+                                    <input type="hidden" name="Id" value="@idOfCourse" />
+                                    <button type="submit">Update</button>
+                                </form>
+                                <form asp-action="DeleteCourse" asp-controller="Home" method="post" style="display:inline;">
+                                    <input type="hidden" name="Id" value="@idOfCourse" />
+                                    <button type="submit">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
                 }
             </tbody>
         </table>
         <button><a asp-controller="Home" asp-action="CreateCourse">Create</a></button>
     </div>
-    <div id="assignment-display">
 
-    </div>
 </div>

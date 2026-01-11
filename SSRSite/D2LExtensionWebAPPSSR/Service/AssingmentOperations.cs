@@ -301,6 +301,47 @@ namespace D2LExtensionWebAPPSSR.Service
                 
 
         }
+        public List<string> GetAssignmentDetailByUser(string UserId)
+        {
+            var result = new List<string>();
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    SqlCommand cmd = new SqlCommand
+                    {
+                        CommandText = @"Select * From Assignment_Detail Where UserId = @UserId Order By Priority DESC, DueDate ASC",
+                        Connection = connection,
+                        CommandType = CommandType.Text
+                    };
 
+                    // specify parameter
+                    SqlParameter UId = new SqlParameter
+                    {
+                        ParameterName = "@UserId",
+                        SqlDbType = SqlDbType.NVarChar,
+                        Size = 450,
+                        Value = UserId,
+                        Direction = ParameterDirection.Input
+                    };
+                    cmd.Parameters.Add(UId);
+                    connection.Open();
+                    SqlDataReader sdr = cmd.ExecuteReader();
+                    while (sdr.Read())
+                    {
+                        string rowLine = sdr["Id"] + "|" + sdr["Title"] + "|" + sdr["DueDate"] + "|" + sdr["Status"] + "|" + sdr["Priority"] + "|" + sdr["EstimatedHours"] + "|" + sdr["CourseTitle"] + "|" + sdr["WeekTitle"];
+                        result.Add(rowLine);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception Occurred On GetAssignmentsByWeek: {ex.Message}");
+
+            }
+            return result;
+
+
+        }
     }
 }

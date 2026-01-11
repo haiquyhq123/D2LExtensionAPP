@@ -11,5 +11,6 @@
 
         List<string> GetImportantTasks(string userId,int days = 7,int numberOfTask = 15);
         List<string> GetAssignmentsByWeek(int courseWeekId);
+        public List<string> GetAssignmentDetailByUser(string UserId);
     }
 }
