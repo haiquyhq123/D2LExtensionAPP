@@ -13,8 +13,9 @@ namespace D2LExtensionWebAPPSSR.Controllers
         }
         [Authorize]
         [HttpGet("CourseWeekOperations/Index/{CourseId}")]
-        public IActionResult Index(int CourseId)
+        public IActionResult Index(int CourseId, [FromQuery] string title)
         {
+            ViewData["CourseTitle"] = title;
             ViewData["CourseId"] = CourseId;
             List<string> res = _cwo.GetCourseWeeksByCourse(CourseId);
             return View(res);
@@ -25,7 +26,7 @@ namespace D2LExtensionWebAPPSSR.Controllers
         public IActionResult CreateCourseWeeks(int CourseId, string Title, string? Description = null)
         {
             _cwo.CreateCourseWeek(CourseId, Title, Description);
-            return RedirectToAction(nameof(CourseWeekOperations.Index), "CourseWeekOperations", new { CourseId = CourseId});
+            return RedirectToAction(nameof(CourseWeekOperations.Index), "CourseWeekOperations", new { CourseId = CourseId });
         }
         [Authorize]
         [HttpPost]

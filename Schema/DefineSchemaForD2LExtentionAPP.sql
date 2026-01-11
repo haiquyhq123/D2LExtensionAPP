@@ -80,14 +80,14 @@ Create Nonclustered index IX_Status on Assignments(Status);
 Create Nonclustered index IX_Priority_DueDate on Assignments(Priority DESC, DueDate ASC);
 -- View For Aassignment detail
 Go
-Create View Assignment_Detail
+Alter View Assignment_Detail
 As
-Select a.Id, a.Title, a.DueDate, a.Status, a.Priority, a.EstimatedHours, c.UserId, c.Title AS CourseTitle, cw.Title AS WeekTitle
+Select a.Id, a.CourseWeekId, a.Title, a.DueDate, a.Status, a.Priority, a.EstimatedHours, c.UserId, c.Title AS CourseTitle, cw.Title AS WeekTitle
 From Assignments as a
 Inner join CourseWeeks as cw 
 On a.CourseWeekId = cw.Id
 Inner join Courses c ON cw.CourseId = c.Id;
-Go
+
 -- CRUD Opration Course
 -- For Calendar
 Create Procedure Get_Calendar(@UsedId nvarchar(450),@StartDate datetime, @EndDate datetime)
@@ -127,14 +127,35 @@ Begin
 End
 Go
 -- CRUD on Assigment
-Create Procedure Create_Assignment(@UserId nvarchar(450), @CourseWeekId int, @Title nvarchar(256), @Description nvarchar(256) = '', @DueDate datetime, @Grade int, @Weight int, @Status nvarchar(256), @EstimatedHours decimal(4,1) = 1.0 )
+Alter Procedure Create_Assignment(@UserId nvarchar(450), @CourseWeekId int, @Title nvarchar(256), @Description nvarchar(256) = '', @DueDate datetime, @Grade int, @Weight int, @Status nvarchar(256), @EstimatedHours decimal(4,1) = 1.0 )
 As
 Begin
     IF Exists(Select 1 From AspNetUsers Where Id = @UserId) And Exists(Select 1 From CourseWeeks Where Id = @CourseWeekId)
     Begin
-        --Can Insert rn
-        Insert into Assignments(CourseWeekId, Title, Description, DueDate, Grade, Weight, Status, EstimatedHours)
-        Values(@CourseWeekId, @Title, @Description, @DueDate, @Grade, @Weight, @Status, @EstimatedHours); 
+        -- only allow insert an assignment with future due date or at least current
+        Declare @currentDate DateTime = GETDATE();
+        If(@DueDate < @currentDate And @Status <> 'Finish')
+        Begin
+            SET @Status = 'OverDue'; -- will notify user over due
+        End
+        -- calculate priority
+        If(@Status <> 'Finish')
+        Begin
+            Declare @CalculatedPriority Int;
+            Declare  @DaysDiff Int = DATEDIFF(Day,@currentDate,@DueDate);
+            If(@DaysDiff <= 1) Set @CalculatedPriority = 100;
+            Else If(@DaysDiff <= 3) Set @CalculatedPriority = 75;
+            Else If (@DaysDiff <= 7) Set @CalculatedPriority = 25;
+            Else Set @CalculatedPriority = 10;
+
+            Set @CalculatedPriority = @CalculatedPriority + ISNULL(@Weight,0);
+        End
+        Else
+        Begin
+            Set @CalculatedPriority = 0; -- if finish, just set to zero
+        End
+        Insert into Assignments(CourseWeekId, Title, Description, DueDate, Grade, Weight, Status, EstimatedHours,Priority,CreateDate)
+        Values(@CourseWeekId, @Title, @Description, @DueDate, @Grade, @Weight, @Status, @EstimatedHours,@CalculatedPriority,@currentDate); 
     End
     ELSE
     Begin
@@ -142,11 +163,36 @@ Begin
     End
 End
 Go
-Create Procedure Update_Assignment_Status(@AssignmentId int, @Status nvarchar(256))
+Alter Procedure Update_Assignment_Status(@AssignmentId int, @Status nvarchar(256))
 As
 Begin
  IF Exists(Select 1 From Assignments Where Id = @AssignmentId) 
     Begin
+      Declare @currentDate DateTime = GETDATE();
+        Declare @DueDate DateTime;
+        Declare @Weight Int;
+        Declare @CalculatedPriority Int;
+        Select @DueDate = DueDate, @Weight = Weight From Assignments Where Id = @AssignmentId;
+        If(@DueDate < @currentDate And @Status <> 'Finish')
+        Begin
+            Set @Status = 'OverDue';
+        End
+        -- Calculate priority
+        If(@Status <> 'Finish')
+        Begin
+            Declare @DaysDiff Int = DATEDIFF(Day, @currentDate, @DueDate);
+            If(@DaysDiff <= 1) Set @CalculatedPriority = 100;
+            Else If(@DaysDiff <= 3) Set @CalculatedPriority = 75;
+            Else If (@DaysDiff <= 7) Set @CalculatedPriority = 25;
+            Else Set @CalculatedPriority = 10;
+
+            Set @CalculatedPriority = @CalculatedPriority + ISNULL(@Weight, 0);
+        End
+        Else
+        Begin
+            Set @CalculatedPriority = 0; -- if finish, set to zero
+        End
+
         Update Assignments SET Status = @Status, CompleteDate = Case
             When @Status = 'Finish' Then GETDATE()
             Else Null
@@ -159,33 +205,23 @@ Begin
     End
 End
 Go
--- Trigger: Auto-Update OverDue
-Create Trigger Assignment_OverDue On Assignments After Insert, Update
-As 
-Begin
-    Update a Set Status = 'OverDue' From Assignments as a
-    Join inserted i on a.Id = i.Id 
-    Where a.Status <> 'Finish' And a.DueDate < GETDATE();
-End
--- Calculate Priority
-Go
-Create trigger Assignment_Priority On Assignments After insert, update
+-- Delete Assignment
+Create Procedure Delete_Assignment(@WeekId Int, @AssignmentId Int)
 As
 Begin
-	Update a
-	Set priority =
-		case
-			when a.duedate < getdate() then 100
-			when datediff(day, getdate(), a.duedate) <= 1 then 90
-			when datediff(day, getdate(), a.duedate) <= 3 then 75
-			when datediff(day, getdate(), a.duedate) <= 7 then 50
-			else 25
-		end + isnull(a.weight, 0)
-	from Assignments a
-	inner join inserted i on a.id = i.id;
+    If(Exists(Select 1 From CourseWeeks as cw inner join Assignments as a on cw.Id = a.CourseWeekId where cw.Id = @WeekId And a.Id = @AssignmentId))
+    Begin
+        Delete From Assignments Where Id = @AssignmentId;
+    End
+    ELse
+    Begin
+        Throw 50000,'CourseWeek Not Found Or Assignment Not Found',1;
+    End
 End
-Go
+-- Trigger: Auto-Update OverDue
+-- Fix trigger error, remove this cuz it causing infinition loop error add this login the create procedure
 
+Go
 -- CRUD on COURSE
 Create procedure Create_Course(@UserId nvarchar(450),@title nvarchar(256),@description nvarchar(256) = null,@semester nvarchar(256) = null,@professor nvarchar(256) = null,@coursecode nvarchar(256))
 As
@@ -268,3 +304,5 @@ End
 go
 
 -- Trigger For Course And CourseWeek Table
+-- Fix Priority Error In Add Assingment
+ALTER TABLE Assignments ADD CONSTRAINT Assignments_Priority DEFAULT 0 FOR Priority;

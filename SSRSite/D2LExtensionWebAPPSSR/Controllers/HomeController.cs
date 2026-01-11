@@ -4,6 +4,7 @@ using D2LExtensionWebAPPSSR.Models;
 using Microsoft.AspNetCore.Authorization;
 using D2LExtensionWebAPPSSR.Service;
 using System.Security.Claims;
+using System.Dynamic;
 
 
 namespace D2LExtensionWebAPPSSR.Controllers;
@@ -12,18 +13,24 @@ public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
     private readonly ICourseOperations _co;
+    private readonly IAssignmentOperations _ao;
 
-    public HomeController(ILogger<HomeController> logger, ICourseOperations CO)
+    public HomeController(ILogger<HomeController> logger, ICourseOperations CO, IAssignmentOperations ao)
     {
         _logger = logger;
         _co = CO;
+        _ao = ao;
     }
     [Authorize]
     public IActionResult Index()
     {
         string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         List<string> ListOfCourse = _co.GetCoursesByUser(userId);
-        return View(ListOfCourse);
+        List<string> ListofAssignment = _ao.GetAssignmentDetailByUser(userId);
+        dynamic ListCoureAndAssingment = new ExpandoObject();
+        ListCoureAndAssingment.LCourse = ListOfCourse;
+        ListCoureAndAssingment.LAssignment = ListofAssignment;
+        return View(ListCoureAndAssingment);
     }
     [Authorize]
     [HttpGet]
