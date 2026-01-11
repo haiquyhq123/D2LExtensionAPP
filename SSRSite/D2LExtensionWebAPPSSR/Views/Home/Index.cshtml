@@ -5,15 +5,73 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div id="calendar-display">
-</div>
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var calendarEl = document.getElementById('calendar-display');
+      var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridWeek',
+        height: 'auto', 
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridWeek,dayGridMonth'
+        },
+        displayEventTime: true,
+        eventTimeFormat: {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        },
+
+        events: [
+            @foreach (var item in Model.LAssignment)
+            {
+                var data = item.Split('|');
+                if (data.Length > 2)
+                {
+                    string rawDate = data[2];
+                    DateTime dateObj;
+                    // we need to parse because, the format datetime in sql server not match with js date time format
+                    if (DateTime.TryParse(rawDate, out dateObj))
+                    {
+                        <text>{title: '@data[1]', start: '@dateObj.ToString("s")', color: '@(data.Length > 4 && data[4] == "High" ? "#dc3545" : "#3788d8")'},</text>
+                    }
+                }
+            }
+        ]
+      });
+
+      calendar.render();
+    });
+</script>
+
+<style>
+     /* Overwrite style of calendar style, i want it can word-wrap*/
+    .fc-event-title {
+        overflow-wrap: break-word; 
+    }
+
+    /* Make the event box allow height expansion */
+    .fc-daygrid-event {
+        white-space: normal !important;
+        align-items: flex-start; 
+    }
+    #calendar-display {
+        margin-bottom: 20px;
+        padding: 10px;
+        background: white;
+        border: 1px solid #ddd;
+    }
+</style>
+
+<div id="calendar-display"></div>
 
 <div class="row">
 
     <div class="col-md-3" id="assignment-display">
         <h3>The Stack</h3>
         <hr />
-
         @if (Model.LAssignment.Count == 0)
         {
             <div class="alert alert-success">No pending tasks!</div>
@@ -24,7 +82,6 @@
                 @foreach (var item in Model.LAssignment)
                 {
                     var data = item.Split('|');
-
                     if (data.Length > 6)
                     {
                         string title = data[1];
@@ -34,11 +91,8 @@
 
                         <li class="list-group-item">
                             <b>@title</b> <br />
-
-                            <span class="text-muted">Course: @course</span> <br />
-
-                            <span>Priority: @priority</span> <br />
-
+                            <span class="text-muted" style="font-size:0.9em">Course: @course</span> <br />
+                            <span style="font-size:0.9em">Priority: @priority</span> <br />
                             <span class="text-danger">Due: @dueDate</span>
                         </li>
                     }
@@ -66,12 +120,10 @@
                 @foreach (var item in Model.LCourse)
                 {
                     var itemColumn = item.Split('|');
-
                     if (itemColumn.Length > 0)
                     {
                         string idOfCourse = itemColumn[0];
                         string titleOfCourse = itemColumn.Length > 1 ? itemColumn[1] : "";
-
                         <tr>
                             @foreach (var col in itemColumn)
                             {
@@ -99,5 +151,4 @@
         </table>
         <button><a asp-controller="Home" asp-action="CreateCourse">Create</a></button>
     </div>
-
 </div>
