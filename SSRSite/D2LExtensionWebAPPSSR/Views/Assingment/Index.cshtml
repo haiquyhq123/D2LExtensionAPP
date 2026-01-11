@@ -2,34 +2,58 @@
 
 @{
     ViewData["Title"] = "Assignments";
-    string? CourseWeekId = ViewData["CourseWeekId"].ToString();
+    string? CourseWeekId = ViewData["CourseWeekId"]?.ToString();
 }
 
 <div>
+    <h2>Week: @ViewData["Description"]</h2>
 
     <div>
-        <h3>Create New Assignment</h3>
+        <div id="createSection">
+            <h3>Create New Assignment</h3>
 
-        <form method="post" asp-action="CreateAssignment" asp-controller="Assingment">
-            <input type="hidden" name="courseWeekId" value="@CourseWeekId" />
+            <form method="post" asp-action="CreateAssignment" asp-controller="Assingment">
+                <input type="hidden" name="courseWeekId" value="@CourseWeekId" />
 
-            <label>Title</label>
-            <input class="form-control" name="title" required />
+                <label>Title</label>
+                <input class="form-control" name="title" required />
 
-            <label>Description</label>
-            <input class="form-control" name="description" />
+                <label>Description</label>
+                <input class="form-control" name="description" />
 
-            <label>Due Date</label>
-            <input class="form-control" type="datetime-local" name="dueDate" required />
+                <label>Due Date</label>
+                <input class="form-control" type="datetime-local" name="dueDate" required />
 
-            <label>Weight</label>
-            <input class="form-control" type="number" name="weight" required />
+                <label>Weight</label>
+                <input class="form-control" type="number" name="weight" required />
 
-            <label>Estimated Hours</label>
-            <input class="form-control" type="number" step="0.1" name="estimatedHours" value="1.0" />
+                <label>Estimated Hours</label>
+                <input class="form-control" type="number" step="0.1" name="estimatedHours" value="1.0" />
 
-            <button type="submit">Add Assignment</button>
-        </form>
+                <button type="submit">Add Assignment</button>
+            </form>
+        </div>
+
+        <div id="updateSection" hidden>
+            <h3>Update Assignment Status</h3>
+            <p>Updating: <strong id="updateTitleDisplay"></strong></p>
+
+            <form method="post" asp-action="UpdateStatusAssignment" asp-controller="Assingment">
+                <input type="hidden" name="courseWeekId" value="@CourseWeekId" />
+                <input type="hidden" name="assignmenmtId" id="updateAssignmentId" />
+
+                <label>status</label>
+                <select name="Status" id="updateStatusSelect">
+                    <option value="NotStarted">Not Started</option>
+                    <option value="OverDue">Over Due</option>
+                    <option value="Finish">Finish</option>
+                    <option value="InProcess">In Process</option>
+                </select>
+
+                <button type="submit">Update Assignment Status</button>
+                <button type="button" onclick="cancelUpdate()">Cancel</button>
+            </form>
+        </div>
     </div>
 
     <hr />
@@ -43,7 +67,6 @@
                 foreach (var item in Model)
                 {
                     var cols = item.Split('|');
-
                     var assignmentId = cols[0];
                     var title = cols[1];
                     var dueDate = cols[2];
@@ -63,6 +86,8 @@
                             <input type="hidden" name="assignmentId" value="@assignmentId" />
                             <button type="submit">Delete</button>
                         </form>
+
+                        <button type="button" onclick="showUpdate('@assignmentId', '@title', '@status')">Update Status</button>
                     </li>
                 }
             }
@@ -72,5 +97,23 @@
             }
         </ul>
     </div>
-
 </div>
+
+<script>
+    function showUpdate(id, title, currentStatus) {
+        document.getElementById('createSection').hidden = true;
+        document.getElementById('updateSection').hidden = false;
+
+        document.getElementById('updateAssignmentId').value = id;
+        document.getElementById('updateTitleDisplay').innerText = title;
+        document.getElementById('updateStatusSelect').value = currentStatus;
+    }
+
+    function cancelUpdate() {
+
+        document.getElementById('createSection').hidden = false;
+        document.getElementById('updateSection').hidden = true;
+        document.getElementById('updateAssignmentId').value = "";
+        document.getElementById('updateTitleDisplay').innerText = "";
+    }
+</script>

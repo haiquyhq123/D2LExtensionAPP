@@ -15,9 +15,10 @@ namespace D2LExtensionWebAPPSSR.Controllers
 
         [Authorize]
         [HttpGet("Assingment/Index/{courseWeekId}")]
-        public IActionResult Index(int courseWeekId)
+        public IActionResult Index(int courseWeekId, [FromQuery] string Description)
         {
             ViewData["CourseWeekId"] = courseWeekId;
+            ViewData["Description"] = Description; 
             List<string> res = _ao.GetAssignmentsByWeek(courseWeekId);
             return View(res);
         }
@@ -37,6 +38,14 @@ namespace D2LExtensionWebAPPSSR.Controllers
         {
             _ao.DeleteAssignment(weekId, assignmentId);
             return RedirectToAction(nameof(Index), new { courseWeekId = weekId });
+        }
+        [Authorize]
+        [HttpPost]
+        [AutoValidateAntiforgeryToken]
+        public IActionResult UpdateStatusAssignment(int assignmenmtId,string status, int courseWeekId)
+        {
+            _ao.UpdateAssignmentStatus(assignmenmtId,status);
+            return RedirectToAction(nameof(Index), new { courseWeekId });
         }
     }
 }
