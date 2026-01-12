@@ -1,5 +1,6 @@
 using D2LExtensionWebAPPSSR.Data;
 using D2LExtensionWebAPPSSR.Factory;
+using D2LExtensionWebAPPSSR.Hubs;
 using D2LExtensionWebAPPSSR.Models;
 using D2LExtensionWebAPPSSR.Service;
 using Microsoft.AspNetCore.Identity;
@@ -7,6 +8,12 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add Email Service
+builder.Services.AddTransient<IEmailService, EmailService>();
+// Load Email Service data in to MailSettings.cs in configuration model
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+// Add SignalR Service
+builder.Services.AddSignalR();
 // Add Assingment Service
 builder.Services.AddScoped<IAssignmentOperations,AssingmentOperations>();
 // Add course service
@@ -52,5 +59,5 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
+app.MapHub<NotificationHub>("/Hubs");
 app.Run();

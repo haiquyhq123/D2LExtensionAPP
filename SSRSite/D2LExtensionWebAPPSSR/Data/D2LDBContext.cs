@@ -53,5 +53,7 @@ namespace D2LExtensionWebAPPSSR.Data
         public DbSet<PomodoroTask> PomodoroTasks { get; set; }
         public DbSet<Session> Sessions { get; set; }
 
+        public DbSet<Notification> Notifications { get; set; }
+
     }
 }
