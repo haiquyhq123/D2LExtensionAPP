@@ -16,7 +16,7 @@
 
 ### Browser Extension (Integration)
 * **Purpose:** Extracts data from D2L-based university websites (e.g., eConestoga) to automate data entry.
-* **Technologies:** REST API, ASP.NET Web API.
+* **Technologies:** In Researching Progress
 
 ---
 
@@ -38,8 +38,8 @@
 
 ### 2. Browser Extension (D2L Scraper)
 * **Goal:** Automatically import essential information (Assignments, Courses, Due Dates) from D2L to the main website.
-* **2.1. Development Status**
-    * - [ ] *[In Progress]* Basic Operations and Data Transfer
+* **2.1. Researching Status**
+    * - [ ] *[In Researching Progress]* Basic Operations and Data Transfer
 
 ---
 
@@ -49,3 +49,7 @@
 
 ## Deployment
 * **Live Link:** [Not Deploy Yet]
+* **Production Image**
+* <img width="1919" height="1018" alt="image" src="https://github.com/user-attachments/assets/1c3d8986-2f23-48ee-bd27-d32655c2901a" />
+
+
