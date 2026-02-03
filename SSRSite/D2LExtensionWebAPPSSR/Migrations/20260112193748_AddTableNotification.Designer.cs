@@ -4,6 +4,7 @@ using D2LExtensionWebAPPSSR.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace D2LExtensionWebAPPSSR.Migrations
 {
     [DbContext(typeof(D2LDBContext))]
-    partial class D2LDBContextModelSnapshot : ModelSnapshot
+    [Migration("20260112193748_AddTableNotification")]
+    partial class AddTableNotification
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -96,8 +99,8 @@ namespace D2LExtensionWebAPPSSR.Migrations
                         {
                             PromodoroTaskId = 1,
                             CompletedPomodoroSession = 2,
-                            CompletedTime = new DateTime(2026, 2, 3, 0, 0, 0, 0, DateTimeKind.Local),
-                            CreatedTime = new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Local),
+                            CompletedTime = new DateTime(2026, 1, 13, 0, 0, 0, 0, DateTimeKind.Local),
+                            CreatedTime = new DateTime(2026, 1, 12, 0, 0, 0, 0, DateTimeKind.Local),
                             Description = "Nah",
                             ExpectedPomodoroSession = 4,
                             Status = "Active",
