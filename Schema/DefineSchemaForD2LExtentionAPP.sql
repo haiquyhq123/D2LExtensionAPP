@@ -1,14 +1,5 @@
-IF DB_ID('SchemaForD2LExtensionAPP') IS NOT NULL
-BEGIN
-	Use Master;
-    ALTER DATABASE SchemaForD2LExtensionAPP SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-    DROP DATABASE SchemaForD2LExtensionAPP;
-END
-CREATE DATABASE SchemaForD2LExtensionAPP;
-Go
 Use SchemaForD2LExtensionAPP;
 Go
-
 If Exists(Select Name From Sys.tables where Name = 'Courses')
 Begin
     Drop Table Courses;
@@ -80,14 +71,14 @@ Create Nonclustered index IX_Status on Assignments(Status);
 Create Nonclustered index IX_Priority_DueDate on Assignments(Priority DESC, DueDate ASC);
 -- View For Aassignment detail
 Go
-Alter View Assignment_Detail
+Create View Assignment_Detail
 As
 Select a.Id, a.CourseWeekId, a.Title, a.DueDate, a.Status, a.Priority, a.EstimatedHours, c.UserId, c.Title AS CourseTitle, cw.Title AS WeekTitle
 From Assignments as a
 Inner join CourseWeeks as cw 
 On a.CourseWeekId = cw.Id
 Inner join Courses c ON cw.CourseId = c.Id;
-
+Go
 -- CRUD Opration Course
 -- For Calendar
 Create Procedure Get_Calendar(@UsedId nvarchar(450),@StartDate datetime, @EndDate datetime)
@@ -105,7 +96,7 @@ Begin
         End
     ELSE
         Begin
-            Throw 50000,'Error User Id', 1;
+            RAISERROR(50001, 16, 1, 'Error User Id');
         End
 End
 Go
@@ -122,12 +113,12 @@ Begin
         End
     ELSE
         Begin
-            Throw 50000,'Error User Id', 1;
+            RAISERROR(50001, 16, 1, 'Error User Id');
         End
 End
 Go
 -- CRUD on Assigment
-Alter Procedure Create_Assignment(@UserId nvarchar(450), @CourseWeekId int, @Title nvarchar(256), @Description nvarchar(256) = '', @DueDate datetime, @Grade int, @Weight int, @Status nvarchar(256), @EstimatedHours decimal(4,1) = 1.0 )
+Create Procedure Create_Assignment(@UserId nvarchar(450), @CourseWeekId int, @Title nvarchar(256), @Description nvarchar(256) = '', @DueDate datetime, @Grade int, @Weight int, @Status nvarchar(256), @EstimatedHours decimal(4,1) = 1.0 )
 As
 Begin
     IF Exists(Select 1 From AspNetUsers Where Id = @UserId) And Exists(Select 1 From CourseWeeks Where Id = @CourseWeekId)
@@ -159,11 +150,11 @@ Begin
     End
     ELSE
     Begin
-        Throw 50000,'Error User Id Or WeekId', 1;
+        RAISERROR(50001, 16, 1, 'Error User Id Or WeekId');
     End
 End
 Go
-Alter Procedure Update_Assignment_Status(@AssignmentId int, @Status nvarchar(256))
+Create Procedure Update_Assignment_Status(@AssignmentId int, @Status nvarchar(256))
 As
 Begin
  IF Exists(Select 1 From Assignments Where Id = @AssignmentId) 
@@ -201,7 +192,7 @@ Begin
     End
     ELSE
     Begin
-        Throw 50000,'Error User Id', 1;
+        RAISERROR(50001, 16, 1, 'Error User Id');
     End
 End
 Go
@@ -215,7 +206,7 @@ Begin
     End
     ELse
     Begin
-        Throw 50000,'CourseWeek Not Found Or Assignment Not Found',1;
+        RAISERROR(50001, 16, 1, 'CourseWeek Not Found Or Assignment Not Found');
     End
 End
 -- Trigger: Auto-Update OverDue
@@ -233,7 +224,7 @@ Begin
 	End
 	Else
 	Begin
-		Throw 50000, 'error user id', 1;
+		RAISERROR(50001, 16, 1, 'Error User Id');
 	End
 End
 Go
@@ -246,7 +237,7 @@ Begin
 	End
 	Else
 	Begin
-		Throw 50000, 'error user id', 1;
+		RAISERROR(50001, 16, 1, 'Error User Id');
 	End
 End
 Go
@@ -272,7 +263,7 @@ Begin
 	End
 	Else
 	Begin
-		throw 50000, 'error course id', 1;
+        RAISERROR(50001, 16, 1, 'error course id');
 	End
 End
 Go
@@ -286,7 +277,7 @@ Begin
 	End
 	Else
 	Begin
-		Throw 50000, 'error course id', 1;
+		RAISERROR(50001, 16, 1, 'error course id');
 	End
 End
 Go
