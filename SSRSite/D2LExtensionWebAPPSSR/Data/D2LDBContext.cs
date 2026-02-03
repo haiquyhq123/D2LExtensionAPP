@@ -42,14 +42,6 @@ namespace D2LExtensionWebAPPSSR.Data
                 });
 
         }
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlServer("Server=LAPTOP-CHPSHFSL\\SQLEXPRESS;Database=SchemaForD2LExtensionAPP;Trusted_Connection=True;TrustServerCertificate=True;");
-            }
-            
-        }
         public DbSet<PomodoroTask> PomodoroTasks { get; set; }
         public DbSet<Session> Sessions { get; set; }
 
