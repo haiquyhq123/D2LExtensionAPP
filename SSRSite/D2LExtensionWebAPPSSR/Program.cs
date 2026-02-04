@@ -5,8 +5,23 @@ using D2LExtensionWebAPPSSR.Models;
 using D2LExtensionWebAPPSSR.Service;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Hangfire;
+using Hangfire.SqlServer;
+using System.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+// Add Hangfire services.
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(builder.Configuration.GetConnectionString("HangfireConnection")));
+
+// Add the processing server as IHostedService
+builder.Services.AddHangfireServer();
+
 
 // Add Email Service
 builder.Services.AddTransient<IEmailService, EmailService>();
@@ -39,8 +54,12 @@ builder.Services.AddIdentity<User, IdentityRole>(opt =>
 }).AddEntityFrameworkStores<D2LDBContext>();
 
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, CustomClaimsFactory>(); ;
+
 var app = builder.Build();
 // Configure the HTTP request pipeline.
+app.UseHangfireDashboard();
+BackgroundJob.Enqueue(() => Console.WriteLine("Hello world from Hangfire!"));
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
