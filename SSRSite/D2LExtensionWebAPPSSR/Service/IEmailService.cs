@@ -4,6 +4,6 @@ namespace D2LExtensionWebAPPSSR.Service
 {
     public interface IEmailService
     {
-        bool SendMail(MailData mailData);
+        public Task<bool> SendMail(MailData mailData);
     }
 }

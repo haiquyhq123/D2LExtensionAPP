@@ -296,4 +296,27 @@ go
 
 -- Trigger For Course And CourseWeek Table
 -- Fix Priority Error In Add Assingment
+
+-- Report send to user
 ALTER TABLE Assignments ADD CONSTRAINT Assignments_Priority DEFAULT 0 FOR Priority;
+
+If Exists(Select Name From Sys.tables where Name = 'WeeklyReports')
+Begin
+    Drop Table WeeklyReports;
+End
+Go
+
+Create Table WeeklyReports
+(
+    Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    UserId NVARCHAR(450) NOT NULL,
+    WeekStartDate DATETIME NOT NULL,
+    WeekEndDate DATETIME NOT NULL,
+    AiRecommendations NVARCHAR(MAX) NOT NULL,
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_WeeklyReport_User FOREIGN KEY(UserId) REFERENCES AspNetUsers(Id) ON DELETE CASCADE
+);
+Go
+
+CREATE NONCLUSTERED INDEX IX_WeeklyReport_User ON WeeklyReports(UserId);
+Go

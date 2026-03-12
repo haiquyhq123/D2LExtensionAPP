@@ -1,0 +1,97 @@
+
+            <!DOCTYPE html>
+            <html lang='en'>
+            <head>
+                <meta charset='UTF-8'>
+                <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                <title>Weekly Study Plan</title>
+                <style>
+                    body { background-color: #f8fafc; font-family: sans-serif; padding: 20px; }
+                    .report-wrapper { max-width: 800px; margin: 2rem auto; }
+                    .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+                    .table-custom { width: 100%; border-collapse: collapse; margin-top: 15px; }
+                    .table-custom th, .table-custom td { padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+                    .table-custom th { background-color: #f8fafc; }
+                    .ai-box { background: #f0fdf4; border-left: 4px solid #22c55e; }
+                    h2, h4 { color: #1e293b; }
+                </style>
+            </head>
+            <body>
+                <div class='report-wrapper'>
+                    <h2 class='mb-4'>Weekly Analysis: thg 3 12 - thg 3 19</h2>
+
+                    <div class='card ai-box'>
+                        <h4>AI Study Advisor</h4>
+                        <div class='mt-3'>
+                            <h3>Recommended Execution Order</h3>
+<ul>
+  <li>
+    <strong>Test A2 (Testing)</strong>
+    <ul>
+      <li>Due Date: Th, 6, Mar (Thursday, March 6)</li>
+      <li>Estimated Time: 10.0 hours</li>
+      <li>Priority Score: 110</li>
+    </ul>
+  </li>
+</ul>
+
+<h3>Time Management Strategy</h3>
+To effectively manage the 10.0 hours, consider breaking down the work into manageable chunks. One option is to divide the work into 2-hour blocks, as follows:
+<ul>
+  <li>8:00 AM - 10:00 AM, Work Block 1: 2.0 hours</li>
+  <li>10:00 AM - 12:00 PM, Break/Relaxation Time</li>
+  <li>12:00 PM - 2:00 PM, Work Block 2: 2.0 hours</li>
+  <li>2:00 PM - 4:00 PM, Break/Relaxation Time</li>
+  <li>4:00 PM - 6:00 PM, Work Block 3: 2.0 hours</li>
+  <li>6:00 PM - 8:00 PM, Break/Relaxation Time, Dinner/Meal Break</li>
+  <li>8:00 PM - 10:00 PM, Work Block 4: 2.0 hours</li>
+</ul>
+
+<h3>Burnout Warning</h3>
+Given the high Priority Score (110) and estimated time (10.0 hours), it is essential to monitor your productivity and take regular breaks to avoid burnout. This intense work period is condensed into one day (Thursday, March 6). Please be cautious not to overexert yourself and take regular breaks to maintain your mental and physical well-being.
+                        </div>
+                    </div>
+
+                    <div class='card'>
+                        <h4>Workload Heatmap</h4>
+                        <canvas id='workloadChart' height='100'></canvas>
+                    </div>
+
+                    <div class='card'>
+                        <h4>Pending Assignments</h4>
+                        <table class='table-custom'>
+                            <thead>
+                                <tr><th>Task</th><th>Course</th><th>Due Date</th><th>Est. Hours</th><th>Priority Score</th></tr>
+                            </thead>
+                            <tbody>
+                                
+                    <tr>
+                        <td><strong>Test A2</strong></td>
+                        <td>Testing</td>
+                        <td>Th 6, thg 3 13 11:03 CH</td>
+                        <td>10,0 h</td>
+                        <td>110</td>
+                    </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const ctx = document.getElementById('workloadChart').getContext('2d');
+                        const chartData = [0,0,0,0,1,0,0];
+
+                        new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+                                datasets: [{ label: 'Assignments Due', data: chartData, backgroundColor: '#3b82f6', borderRadius: 4 }]
+                            },
+                            options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+                        });
+                    });
+                </script>
+            </body>
+            </html>

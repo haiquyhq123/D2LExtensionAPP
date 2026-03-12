@@ -1,8 +1,11 @@
-﻿using D2LExtensionWebAPPSSR.Models;
-using MailKit.Security;
-using Microsoft.Extensions.Options;
+﻿using MailKit.Net.Smtp;
 using MimeKit;
-using MailKit.Net.Smtp;
+using Microsoft.Extensions.Options;
+using D2LExtensionWebAPPSSR.Models;
+using System.IO;
+using System.Threading.Tasks;
+using System;
+
 namespace D2LExtensionWebAPPSSR.Service
 {
     public class EmailService : IEmailService
@@ -11,9 +14,9 @@ namespace D2LExtensionWebAPPSSR.Service
         public EmailService(IOptions<MailSettings> options)
         {
             mailSettings = options.Value;
-
         }
-        public bool SendMail(MailData mailData)
+
+        public async Task<bool> SendMail(MailData mailData)
         {
             try
             {
@@ -23,28 +26,26 @@ namespace D2LExtensionWebAPPSSR.Service
                 MailboxAddress emailTo = new MailboxAddress(mailData.EmailToName, mailData.EmailToId);
                 emailMessage.To.Add(emailTo);
                 emailMessage.Subject = mailData.EmailSubject;
-                BodyBuilder emailBodayBuilder = new BodyBuilder();
-                emailBodayBuilder.TextBody = mailData.EmailBody;
-                emailMessage.Body = emailBodayBuilder.ToMessageBody();
-                using (SmtpClient mailClient = new SmtpClient())
-                {
-                   
-                    if (mailSettings.Port == 587)
-                    {
-                        mailClient.Connect(mailSettings.Host, mailSettings.Port, SecureSocketOptions.StartTls);
-                    }
-                    else
-                    {
-       
-                        mailClient.Connect(mailSettings.Host, mailSettings.Port, true);
-                    }
 
-                    mailClient.Authenticate(mailSettings.EmailId, mailSettings.Password);
+                BodyBuilder emailBodyBuilder = new BodyBuilder();
+                emailBodyBuilder.TextBody = mailData.EmailBody;
+
+                // ATTACHMENT LOGIC
+                if (!string.IsNullOrEmpty(mailData.AttachmentPath) && File.Exists(mailData.AttachmentPath))
+                {
+                    emailBodyBuilder.Attachments.Add(mailData.AttachmentPath);
+                }
+
+                emailMessage.Body = emailBodyBuilder.ToMessageBody();
+
+                using (MailKit.Net.Smtp.SmtpClient mailClient = new SmtpClient())
+                {
+                    await mailClient.ConnectAsync(mailSettings.Host, mailSettings.Port, MailKit.Security.SecureSocketOptions.SslOnConnect);
+                    await mailClient.AuthenticateAsync(mailSettings.UserName, mailSettings.Password);
                     mailClient.Send(emailMessage);
                     mailClient.Disconnect(true);
                 }
                 return true;
-
             }
             catch (Exception ex)
             {
