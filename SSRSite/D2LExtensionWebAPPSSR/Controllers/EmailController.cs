@@ -2,6 +2,7 @@
 using D2LExtensionWebAPPSSR.Service;
 using MailKit;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace D2LExtensionWebAPPSSR.Controllers
 {
@@ -14,9 +15,10 @@ namespace D2LExtensionWebAPPSSR.Controllers
             _ms = ms;
         }
         [HttpPost]
-        public bool SendMail([FromBody]MailData mailData)
+        public async Task SendMail([FromBody]MailData mailData)
         {
-            return _ms.SendMail(mailData);
+            await _ms.SendMail(mailData);
+            
         }
     }
 }

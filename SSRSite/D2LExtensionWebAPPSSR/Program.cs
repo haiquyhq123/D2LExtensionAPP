@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Hangfire;
 using Hangfire.SqlServer;
 using System.Configuration;
+using D2LExtensionWebAPPSSR.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,9 @@ builder.Services.AddHangfireServer();
 builder.Services.AddTransient<IEmailService, EmailService>();
 // Load Email Service data in to MailSettings.cs in configuration model
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+// Add Notification Service
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<NotificationService>();
 // Add SignalR Service
 builder.Services.AddSignalR();
 // Add Assingment Service
@@ -43,6 +47,12 @@ builder.Services.AddControllersWithViews();
 //Set up the connection string
 builder.Services.AddDbContext<D2LDBContext>(opts => opts.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Register Custom Clean Architecture Services
+builder.Services.AddScoped<IPlannerDataRepository, PlannerDataRepository>();
+builder.Services.AddHttpClient<IAiStudyAdvisorService, OpenAiStudyAdvisorService>();
+builder.Services.AddScoped<IStaticReportGeneratorService, StaticReportGeneratorService>();
+builder.Services.AddScoped<WeeklyReportJob>();
+
 // Set up the AddIdentity with several defined attribute on password
 builder.Services.AddIdentity<User, IdentityRole>(opt =>
 {
@@ -56,9 +66,26 @@ builder.Services.AddIdentity<User, IdentityRole>(opt =>
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, CustomClaimsFactory>(); ;
 
 var app = builder.Build();
-// Configure the HTTP request pipeline.
+//Configure the HTTP request pipeline.
+app.UseStaticFiles();
 app.UseHangfireDashboard();
-BackgroundJob.Enqueue(() => Console.WriteLine("Hello world from Hangfire!"));
+using (var scope = app.Services.CreateScope())
+{
+    //var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
+    //recurringJobManager.AddOrUpdate<INotificationService>(
+    //    "Notification System",
+    //    service => service.DailyRemidersDueDateAssignment("lehaiquybui@gmail.com", "Test Daily"),
+    //    "0 17 * * 0"
+    //);
+    var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
+    recurringJobManager.AddOrUpdate<WeeklyReportJob>(
+        "generate-weekly-reports",
+        job => job.GenerateAndEmailWeeklyReportsAsync(),
+         "0 17 * * 0" // Every Sunday at 5:00 PM
+
+    );
+}
+
 
 if (!app.Environment.IsDevelopment())
 {

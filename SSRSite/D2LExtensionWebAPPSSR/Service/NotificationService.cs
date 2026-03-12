@@ -17,7 +17,7 @@ namespace D2LExtensionWebAPPSSR.Service
             _hc = hc;
             _ms = ms;
         }
-        public async Task CreateNotificationAsync(string userId, string title, string message, string userEmail)
+        public async Task CreateNotification(string userId, string title, string message, string userEmail)
         {
             Notification notification = new Notification
             {
@@ -42,7 +42,8 @@ namespace D2LExtensionWebAPPSSR.Service
                 EmailSubject = "Assignment Due Date",
                 EmailBody = content
             };
-            _ms.SendMail(mailData);
+            await _ms.SendMail(mailData);
+          
         }
     }
 }
